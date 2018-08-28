@@ -75,8 +75,8 @@ class CombinatorialTripletSet:
         for cls in classes:
             clsPaths = self.files[cls]
             clsSources = self.source[cls]
-            tcamInds = random.shuffle(np.where(clsSources=='tcam')[0])
-            exInds = random.shuffle(np.where(clsSources=='expedia')[0])
+            tcamInds = np.where(clsSources=='tcam')[0]
+            exInds = np.where(clsSources=='expedia')[0]
             if len(tcamInds) >= self.numPos/2 and len(exInds) >= self.numPos/2:
                 numTcam = self.numPos/2
                 numEx = self.numPos - numTcam
@@ -86,6 +86,9 @@ class CombinatorialTripletSet:
             else:
                 numTcam = len(tcamInds)
                 numEx = self.numPos - numTcam
+
+            random.shuffle(tcamInds)
+            random.shuffle(exInds)
 
             for j1 in np.arange(numTcam):
                 imPath = self.files[cls][tcamInds[j1]]
