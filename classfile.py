@@ -12,6 +12,8 @@ import os
 import glob
 import socket
 
+peopleDir = './images/people_crops/train/'
+
 class CombinatorialTripletSet:
     def __init__(self, image_list, mean_file, image_size, crop_size, batchSize=100, num_pos=10, isTraining=True, isOverfitting=False):
         self.image_size = image_size
@@ -61,6 +63,7 @@ class CombinatorialTripletSet:
                 self.files[idx] = backupFiles[:10]
 
         self.indexes = np.arange(0, len(self.files))
+        self.people_crop_files = glob.glob(os.path.join(peopleDir,'*.png'))
 
     def getBatch(self):
         numClasses = self.batchSize/self.numPos # need to handle the case where we need more classes than we have?
@@ -140,3 +143,35 @@ class CombinatorialTripletSet:
         img = img[top:(top+self.crop_size[0]),left:(left+self.crop_size[1]),:]
 
         return img
+
+    def getPeopleMasks(self):
+        which_inds = random.sample(np.arange(0,len(self.people_crop_files)),self.batchSize)
+
+        people_crops = np.zeros([self.batchSize,self.crop_size[0],self.crop_size[1]])
+        for ix in range(0,self.batchSize):
+            people_crops[ix,:,:] = self.getImageAsMask(self.people_crop_files[which_inds[ix]])
+
+        people_crops = np.expand_dims(people_crops, axis=3)
+
+        return people_crops
+
+    def getImageAsMask(self, image_file):
+        img = cv2.imread(image_file,cv2.IMREAD_GRAYSCALE)
+        if img is None:
+            return None
+
+        # how much of the image should the mask take up
+        scale = np.random.randint(30,70)/float(100)
+        resized_img = cv2.resize(img,(int(self.crop_size[0]*scale),int(self.crop_size[1]*scale)))
+
+        # where should we put the mask?
+        top = np.random.randint(0,self.crop_size[0]-resized_img.shape[0])
+        left = np.random.randint(0,self.crop_size[1]-resized_img.shape[1])
+
+        new_img = np.ones((self.crop_size[0],self.crop_size[1]))*255.0
+        new_img[top:top+resized_img.shape[0],left:left+resized_img.shape[1]] = resized_img
+
+        new_img[new_img<255] = 0
+        new_img[new_img>1] = 1
+
+        return new_img

@@ -89,10 +89,12 @@ def main(margin,batch_size,output_size,learning_rate,whichGPU,is_finetuning,pret
 
     # Queuing op loads data into input tensor
     image_batch = tf.placeholder(tf.float32, shape=[batch_size, crop_size[0], crop_size[0], 3])
+    people_mask_batch = tf.placeholder(tf.float32, shape=[batch_size, crop_size[0], crop_size[0], 1])
     label_batch = tf.placeholder(tf.int32, shape=(batch_size))
 
     # doctor image params
     percent_crop = .5
+    percent_people = .5
     percent_rotate = .2
     percent_filters = .4
     percent_text = .1
@@ -181,10 +183,24 @@ def main(margin,batch_size,output_size,learning_rate,whichGPU,is_finetuning,pret
 
     filtered_batch = clip_ops.clip_by_value(adjusted,0.0,255.0)
 
+    # insert people masks
+    num_people_masks = int(batch_size*percent_people)
+    mask_inds = np.random.choice(np.arange(0,batch_size),num_people_masks,replace=False)
+
+    start_masks = np.zeros([batch_size, crop_size[0], crop_size[0], 1],dtype='float32')
+    start_masks[mask_inds,:,:,:] = 1
+
+    inv_start_masks = np.ones([batch_size, crop_size[0], crop_size[0], 1],dtype='float32')
+    inv_start_masks[mask_inds,:,:,:] = 0
+
+    masked_masks = tf.add(inv_start_masks,tf.cast(tf.multiply(people_mask_batch,start_masks),dtype=tf.float32))
+    masked_masks2 = tf.cast(tf.tile(masked_masks,[1, 1, 1, 3]),dtype=tf.float32)
+    masked_batch = tf.multiply(masked_masks,filtered_batch)
+
     # after we've doctored everything, we need to remember to subtract off the mean
     repMeanIm = np.tile(np.expand_dims(train_data.meanImage,0),[batch_size,1,1,1])
     noise = tf.random_normal(shape=[batch_size, crop_size[0], crop_size[0], 1], mean=0.0, stddev=0.0025, dtype=tf.float32)
-    final_batch = tf.add(tf.subtract(filtered_batch,repMeanIm),noise)
+    final_batch = tf.add(tf.subtract(masked_batch,repMeanIm),noise)
 
     print("Preparing network...")
     with slim.arg_scope(resnet_v2.resnet_arg_scope()):
@@ -270,7 +286,8 @@ def main(margin,batch_size,output_size,learning_rate,whichGPU,is_finetuning,pret
     for step in range(num_iters):
         start_time = time.time()
         batch, labels, ims = train_data.getBatch()
-        _, loss_val = sess.run([train_op, loss], feed_dict={image_batch: batch, label_batch: labels})
+        people_masks = train_data.getPeopleMasks()
+        _, loss_val = sess.run([train_op, loss], feed_dict={image_batch: batch, people_mask_batch: people_masks,label_batch: labels})
         end_time = time.time()
         duration = end_time-start_time
         out_str = 'Step %d: loss = %.6f -- (%.3f sec)' % (step, loss_val,duration)
