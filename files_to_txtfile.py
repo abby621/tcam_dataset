@@ -53,7 +53,7 @@ while len(by_hotel.keys()) < numToInclude:
         if len(by_hotel[hotel]) > 100:
             bad_hotels.append(hotel)
             by_hotel.pop(hotel, None)
-        ctr += 1
+    ctr += 1
 
 
 if only_expedia:
