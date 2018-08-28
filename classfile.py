@@ -50,7 +50,7 @@ class CombinatorialTripletSet:
                 self.classes.append(ctr)
                 ctr += 1
 
-        self.source = [[f.split('/')[4] for f in c] for c in self.files]
+        self.source = np.array([[f.split('/')[4] for f in c] for c in self.files])
 
         # if we're overfitting, limit how much data we have per class
         if self.isOverfitting == True:
