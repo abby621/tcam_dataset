@@ -36,7 +36,7 @@ def main(margin,batch_size,output_size,learning_rate,whichGPU,is_finetuning,pret
 
     ckpt_dir = './output/no_doctoring/ckpts'
     log_dir = './output/no_doctoring/logs'
-    train_filename = './input/train.txt'
+    train_filename = './input/train_by_hotel.txt'
     mean_file = './input/meanIm.npy'
 
     img_size = [256, 256]
