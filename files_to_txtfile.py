@@ -1,7 +1,7 @@
 import json
 
 only_expedia = False
-train_or_test = 'test'
+train_or_test = 'train'
 
 jsonDataPath = './input/'+train_or_test+'_set.json'
 with open(jsonDataPath) as f:
@@ -10,7 +10,7 @@ with open(jsonDataPath) as f:
 imDict = {}
 for hotel in data:
     for source in data[hotel]['ims'].keys():
-        if (~only_expedia) or (only_expedia and source=='expedia'):
+        if (not only_expedia) or (only_expedia and source=='expedia'):
             for im in data[hotel]['ims'][source].keys():
                 imFile = data[hotel]['ims'][source][im]['path'].split('/')[-1]
                 imDict[imFile] = {}
@@ -50,10 +50,17 @@ while len(by_hotel.keys()) < numToInclude:
         by_chain[chain].append(f)
     ctr += 1
 
-with open('./input/'+train_or_test+'_by_hotel.txt', 'w') as f:
+if only_expedia:
+    by_hotel_path = './input/expedia_'+train_or_test+'_by_hotel.txt'
+    by_chain_path = './input/expedia_'+train_or_test+'_by_chain.txt'
+else:
+    by_hotel_path = './input/'+train_or_test+'_by_hotel.txt'
+    by_chain_path = './input/'+train_or_test+'_by_chain.txt'
+
+with open(by_hotel_path, 'w') as f:
    for key in by_hotel.keys():
        f.writelines(' '.join(by_hotel[key]) + '\n')
 
-with open('./input/'+train_or_test+'_by_chain.txt', 'w') as f:
+with open(by_chain_path, 'w') as f:
    for key in by_chain.keys():
        f.writelines(' '.join(by_chain[key]) + '\n')
