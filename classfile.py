@@ -50,6 +50,8 @@ class CombinatorialTripletSet:
                 self.classes.append(ctr)
                 ctr += 1
 
+        self.source = [[f.split('/')[4] for f in c] for c in train_data.files]
+
         # if we're overfitting, limit how much data we have per class
         if self.isOverfitting == True:
             self.classes = self.classes[:10]
@@ -113,59 +115,3 @@ class CombinatorialTripletSet:
         img = img[top:(top+self.crop_size[0]),left:(left+self.crop_size[1]),:]
 
         return img
-
-class NonTripletSet(CombinatorialTripletSet):
-    def __init__(self, image_list, mean_file, image_size, crop_size, batchSize=100, isTraining=True):
-        self.image_size = image_size
-        self.crop_size = crop_size
-
-        self.meanFile = mean_file
-        meanIm = np.load(self.meanFile)
-
-        if meanIm.shape[0] == 3:
-            meanIm = np.moveaxis(meanIm, 0, -1)
-
-        self.meanImage = cv2.resize(meanIm, (self.crop_size[0], self.crop_size[1]))
-
-        #img = img - self.meanImage
-        if len(self.meanImage.shape) < 3:
-            self.meanImage = np.asarray(np.dstack((self.meanImage, self.meanImage, self.meanImage)))
-
-        self.batchSize = batchSize
-
-        self.files = []
-        self.classes = []
-        # Reads a .txt file containing image paths of image sets where each line contains
-        # all images from the same set and the first image is the anchor
-        f = open(image_list, 'r')
-        ctr = 0
-        for line in f:
-            temp = line[:-1].split(' ')
-            self.files.append(temp)
-            self.classes.append(ctr)
-            ctr += 1
-
-        self.image_size = image_size
-        self.crop_size = crop_size
-        self.isTraining = isTraining
-        self.indexes = np.arange(0, len(self.files))
-
-    def getBatch(self):
-        batch = np.zeros([self.batchSize, self.crop_size[0], self.crop_size[1], 3])
-        labels = np.zeros([self.batchSize],dtype='int')
-        ims = np.zeros([self.batchSize],dtype=object)
-
-        for ix in range(0,self.batchSize):
-            randClass = random.choice(self.classes)
-            randIm = random.choice(self.files[randClass])
-            randImg = self.getProcessedImage(randIm)
-            while randImg is None:
-                randClass = np.random.choice(self.classes)
-                randIm = random.choice(self.files[randClass])
-                randImg = self.getProcessedImage(randIm)
-
-            batch[ix,:,:,:] = randImg
-            labels[ix] = randClass
-            ims[ix] = randIm
-
-        return batch, labels, ims
