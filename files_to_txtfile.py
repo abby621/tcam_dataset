@@ -1,6 +1,6 @@
 import json
 
-train_or_test = 'test'
+train_or_test = 'train'
 
 jsonDataPath = './input/'+train_or_test+'_set.json'
 with open(jsonDataPath) as f:
@@ -28,7 +28,7 @@ for hotel in data:
             imDict[imFile]['hotelId'] = hotel
 
 import glob, os
-dataset_path = '/project/focus/datasets/tcam_aaai/'+train_or_test+'/'
+dataset_path = './images/'+train_or_test+'/'
 if train_or_test == 'train':
     files = glob.glob(os.path.join(dataset_path,'*/*/*.jpg'))
 else:
@@ -36,9 +36,17 @@ else:
 
 # TODO: Break if len(files) > len(imDict.keys())
 
+if train_or_test == 'train':
+    numToInclude = 50000
+else:
+    numToInclude = 5000
+
 by_hotel = {}
 by_chain = {}
-for f in files:
+ctr = 0
+while len(by_hotel.keys()) < numToInclude:
+    print len(by_hotel.keys())
+    f = files[ctr]
     imFile = f.split('/')[-1]
     hotel = imDict[imFile]['hotelId']
     chain = imDict[imFile]['chainId']
@@ -50,6 +58,7 @@ for f in files:
         by_chain[chain] = [f]
     else:
         by_chain[chain].append(f)
+    ctr += 1
 
 with open('./input/'+train_or_test+'_by_hotel.txt', 'w') as f:
    for key in by_hotel.keys():

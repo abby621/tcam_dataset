@@ -13,13 +13,13 @@ def resize(imList):
     for im in imList:
         try:
             imUrl = im[2]
-            saveDir = os.path.join('/project/focus/datasets/tcam_aaai/test/',im[0])
+            saveDir = os.path.join('./images/test/',im[0])
             if not os.path.exists(saveDir):
                 os.makedirs(saveDir)
-            
+
             savePath = os.path.join(saveDir,imUrl.split('/')[-1])
             print savePath
-            
+
             if not os.path.isfile(savePath):
                 img = url_to_image(imUrl)
                 if img.shape[1] > img.shape[0]:
@@ -38,19 +38,20 @@ def resize(imList):
             print 'Bad: ' + savePath
 
 def main():
-    jsonDataPath = '/project/focus/abby/tcam_dataset/test_set.json'
+    jsonDataPath = './input/test_set.json'
     with open(jsonDataPath) as f:
         data = json.load(f)
 
     imList = []
     for hotel in data.keys():
-        ims = data[hotel]
-        for im in ims['ims']:
-            imList.append((hotel,'tcam',im))
-    
+        info = data[hotel]
+        for im in info['ims']['tcam'].keys():
+            im_path = info['ims']['tcam'][im]['path']
+            imList.append((hotel,'tcam',im_path))
+
     pool = multiprocessing.Pool()
     NUM_THREADS = multiprocessing.cpu_count()
-    
+
     imDict = {}
     for cpu in range(NUM_THREADS):
         pool.apply_async(resize,[imList[cpu::NUM_THREADS]])
