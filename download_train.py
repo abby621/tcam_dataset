@@ -38,6 +38,10 @@ def resize(imList):
             print 'Bad: ' + savePath
 
 def main():
+    jsonDataPath = './input/train_set.json'
+    with open(jsonDataPath) as f:
+        data = json.load(f)
+
     imList = []
     for hotel in data.keys():
         info = data[hotel]
