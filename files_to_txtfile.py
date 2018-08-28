@@ -1,6 +1,7 @@
 import json
 
-train_or_test = 'train'
+only_expedia = False
+train_or_test = 'test'
 
 jsonDataPath = './input/'+train_or_test+'_set.json'
 with open(jsonDataPath) as f:
@@ -8,24 +9,13 @@ with open(jsonDataPath) as f:
 
 imDict = {}
 for hotel in data:
-    if train_or_test == 'train':
-        for im in data[hotel]['expedia']:
-            imFile = im.split('/')[-1]
-            imDict[imFile] = {}
-            imDict[imFile]['chainId'] = data[hotel]['chainId']
-            imDict[imFile]['hotelId'] = hotel
-        if 'tcam' in data[hotel].keys():
-            for im in data[hotel]['tcam']:
-                imFile = im.split('/')[-1]
+    for source in data[hotel]['ims'].keys():
+        if (~only_expedia) or (only_expedia and source=='expedia'):
+            for im in data[hotel]['ims'][source].keys():
+                imFile = data[hotel]['ims'][source][im]['path'].split('/')[-1]
                 imDict[imFile] = {}
                 imDict[imFile]['chainId'] = data[hotel]['chainId']
                 imDict[imFile]['hotelId'] = hotel
-    else:
-        for im in data[hotel]['ims']:
-            imFile = im.split('/')[-1]
-            imDict[imFile] = {}
-            imDict[imFile]['chainId'] = data[hotel]['chainId']
-            imDict[imFile]['hotelId'] = hotel
 
 import glob, os
 dataset_path = './images/'+train_or_test+'/'
