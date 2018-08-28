@@ -73,14 +73,36 @@ class CombinatorialTripletSet:
 
         ctr = 0
         for cls in classes:
-            random.shuffle(self.files[cls])
-            for j in np.arange(self.numPos):
-                if j < len(self.files[cls]):
-                    img = self.getProcessedImage(self.files[cls][j])
-                    if img is not None:
-                        batch[ctr,:,:,:] = img
-                    labels[ctr] = cls
-                    ims.append(self.files[cls][j])
+            clsPaths = self.files[cls]
+            clsSources = self.source[cls]
+            tcamInds = random.shuffle(np.where(clsSources=='tcam')[0])
+            exInds = random.shuffle(np.where(clsSources=='expedia')[0])
+            if len(tcamInds) >= self.numPos/2 and len(exInds) >= self.numPos/2:
+                numTcam = self.numPos/2
+                numEx = self.numPos - numTcam
+            elif len(tcamInds) >= self.numPos/2 and len(exInds) < self.numPos/2:
+                numEx = len(exInds)
+                numTcam = self.numPos - numEx
+            else:
+                numTcam = len(tcamInds)
+                numEx = self.numPos - numTcam
+
+            for j1 in np.arange(numTcam):
+                imPath = self.files[cls][tcamInds[j1]]
+                img = self.getProcessedImage(imPath)
+                if img is not None:
+                    batch[ctr,:,:,:] = img
+                labels[ctr] = cls
+                ims.append(imPath)
+                ctr += 1
+
+            for j2 in np.arange(numEx):
+                imPath = self.files[cls][exInds[j2]]
+                img = self.getProcessedImage(imPath)
+                if img is not None:
+                    batch[ctr,:,:,:] = img
+                labels[ctr] = cls
+                ims.append(imPath)
                 ctr += 1
 
         return batch, labels, ims
