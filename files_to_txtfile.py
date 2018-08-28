@@ -33,22 +33,28 @@ else:
 
 by_hotel = {}
 by_chain = {}
+bad_hotels = []
 ctr = 0
 while len(by_hotel.keys()) < numToInclude:
     print len(by_hotel.keys())
     f = files[ctr]
     imFile = f.split('/')[-1]
     hotel = imDict[imFile]['hotelId']
-    chain = imDict[imFile]['chainId']
-    if not hotel in by_hotel.keys():
-        by_hotel[hotel] = [f]
-    else:
-        by_hotel[hotel].append(f)
-    if not chain in by_chain.keys():
-        by_chain[chain] = [f]
-    else:
-        by_chain[chain].append(f)
-    ctr += 1
+    if hotel not in bad_hotels:
+        chain = imDict[imFile]['chainId']
+        if not hotel in by_hotel.keys():
+            by_hotel[hotel] = [f]
+        else:
+            by_hotel[hotel].append(f)
+        if not chain in by_chain.keys():
+            by_chain[chain] = [f]
+        else:
+            by_chain[chain].append(f)
+        if len(by_hotel[hotel]) > 100:
+            bad_hotels.append(hotel)
+            by_hotel.pop(hotel, None)
+        ctr += 1
+
 
 if only_expedia:
     by_hotel_path = './input/expedia_'+train_or_test+'_by_hotel.txt'
