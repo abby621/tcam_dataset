@@ -121,7 +121,6 @@ class CombinatorialTripletSet:
         batch = np.zeros([len(image_list), self.crop_size[0], self.crop_size[1], 3])
         for ix in range(0,len(image_list)):
             img = self.getProcessedImage(image_list[ix])
-            img = img - self.meanImage
             batch[ix,:,:,:] = img
         return batch
 
