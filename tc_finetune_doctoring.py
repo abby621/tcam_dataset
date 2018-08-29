@@ -90,7 +90,6 @@ def main(margin,batch_size,output_size,learning_rate,whichGPU,is_finetuning,pret
     # Queuing op loads data into input tensor
     image_batch = tf.placeholder(tf.float32, shape=[batch_size, crop_size[0], crop_size[0], 3])
     people_mask_batch = tf.placeholder(tf.float32, shape=[batch_size, crop_size[0], crop_size[0], 1])
-    label_batch = tf.placeholder(tf.int32, shape=(batch_size))
 
     # doctor image params
     percent_crop = .5
@@ -197,10 +196,8 @@ def main(margin,batch_size,output_size,learning_rate,whichGPU,is_finetuning,pret
     masked_masks2 = tf.cast(tf.tile(masked_masks,[1, 1, 1, 3]),dtype=tf.float32)
     masked_batch = tf.multiply(masked_masks,filtered_batch)
 
-    # after we've doctored everything, we need to remember to subtract off the mean
-    repMeanIm = np.tile(np.expand_dims(train_data.meanImage,0),[batch_size,1,1,1])
     noise = tf.random_normal(shape=[batch_size, crop_size[0], crop_size[0], 1], mean=0.0, stddev=0.0025, dtype=tf.float32)
-    final_batch = tf.add(tf.subtract(masked_batch,repMeanIm),noise)
+    final_batch = tf.add(masked_batch,noise)
 
     print("Preparing network...")
     with slim.arg_scope(resnet_v2.resnet_arg_scope()):
@@ -287,7 +284,7 @@ def main(margin,batch_size,output_size,learning_rate,whichGPU,is_finetuning,pret
         start_time = time.time()
         batch, labels, ims = train_data.getBatch()
         people_masks = train_data.getPeopleMasks()
-        _, loss_val = sess.run([train_op, loss], feed_dict={image_batch: batch, people_mask_batch: people_masks,label_batch: labels})
+        _, loss_val = sess.run([train_op, loss], feed_dict={image_batch: batch, people_mask_batch: people_masks})
         end_time = time.time()
         duration = end_time-start_time
         out_str = 'Step %d: loss = %.6f -- (%.3f sec)' % (step, loss_val,duration)

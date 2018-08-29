@@ -89,12 +89,8 @@ def main(margin,batch_size,output_size,learning_rate,whichGPU,is_finetuning,pret
 
     # Queuing op loads data into input tensor
     image_batch = tf.placeholder(tf.float32, shape=[batch_size, crop_size[0], crop_size[0], 3])
-    label_batch = tf.placeholder(tf.int32, shape=(batch_size))
-
-    # after we've doctored everything, we need to remember to subtract off the mean
-    repMeanIm = np.tile(np.expand_dims(train_data.meanImage,0),[batch_size,1,1,1])
     noise = tf.random_normal(shape=[batch_size, crop_size[0], crop_size[0], 1], mean=0.0, stddev=0.0025, dtype=tf.float32)
-    final_batch = tf.add(tf.subtract(image_batch,repMeanIm),noise)
+    final_batch = tf.add(image_batch,noise)
 
     print("Preparing network...")
     with slim.arg_scope(resnet_v2.resnet_arg_scope()):
@@ -180,7 +176,7 @@ def main(margin,batch_size,output_size,learning_rate,whichGPU,is_finetuning,pret
     for step in range(num_iters):
         start_time = time.time()
         batch, labels, ims = train_data.getBatch()
-        _, loss_val = sess.run([train_op, loss], feed_dict={image_batch: batch, label_batch: labels})
+        _, loss_val = sess.run([train_op, loss], feed_dict={image_batch: batch})
         end_time = time.time()
         duration = end_time-start_time
         out_str = 'Step %d: loss = %.6f -- (%.3f sec)' % (step, loss_val,duration)

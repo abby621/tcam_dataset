@@ -47,10 +47,14 @@ class CombinatorialTripletSet:
             # if self.isTraining:
             #     while len(temp) < self.numPos: # make sure we have at least 10 images available per class
             #         temp.append(random.choice(temp))
-            if len(temp) > self.numPos:
+            if self.isTraining:
+                if len(temp) > self.numPos:
+                    self.files.append(temp)
+                    self.classes.append(ctr)
+                    ctr += 1
+            else:
                 self.files.append(temp)
                 self.classes.append(ctr)
-                ctr += 1
 
         self.source = ([np.array([f.split('/')[4] for f in c]) for c in self.files])
 
@@ -117,6 +121,7 @@ class CombinatorialTripletSet:
         batch = np.zeros([len(image_list), self.crop_size[0], self.crop_size[1], 3])
         for ix in range(0,len(image_list)):
             img = self.getProcessedImage(image_list[ix])
+            img = img - self.meanImage
             batch[ix,:,:,:] = img
         return batch
 
@@ -141,6 +146,7 @@ class CombinatorialTripletSet:
             left = int(round((self.image_size[1] - self.crop_size[1])/2))
 
         img = img[top:(top+self.crop_size[0]),left:(left+self.crop_size[1]),:]
+        img = img - self.meanImage
 
         return img
 
