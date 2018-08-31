@@ -19,7 +19,7 @@ def load_h5(data_description,path):
 pretrained_net = './models/ilsvrc2012.ckpt'
 iterStr = 'ilsvrc2012'
 
-output_dir = os.path.join('./output/doctoring/results',iterStr)
+output_dir = os.path.join('./output/ilsvrc2012/results',iterStr)
 if not os.path.exists(output_dir):
     os.makedirs(output_dir)
 
