@@ -55,11 +55,11 @@ class CombinatorialTripletSet:
             if self.isTraining:
                 if len(temp) > self.numPos:
                     self.files.append(temp)
-                    self.classes.append(temp[0].split('/')[3])
+                    self.classes.append(temp[0].split('/')[clsPos])
                     ctr += 1
             else:
                 self.files.append(temp)
-                self.classes.append(temp[0].split('/')[3])
+                self.classes.append(temp[0].split('/')[clsPos])
 
         self.source = ([np.array([f.split('/')[4] for f in c]) for c in self.files])
 
