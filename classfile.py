@@ -47,6 +47,11 @@ class CombinatorialTripletSet:
             # if self.isTraining:
             #     while len(temp) < self.numPos: # make sure we have at least 10 images available per class
             #         temp.append(random.choice(temp))
+            # this is SUPER hacky -- if the test file is 'by_chain' then the class is in the 5th position, not the 4th
+            if 'by_chain' in image_list:
+                clsPos = 4
+            else:
+                clsPos = 3
             if self.isTraining:
                 if len(temp) > self.numPos:
                     self.files.append(temp)
