@@ -3,9 +3,10 @@ import faiss
 import h5py
 import os
 
-whichGPU = 3
-iterStr = 'ilsvrc2012'
-output_dir = os.path.join('./output/ilsvrc2012/results',iterStr)
+whichGPU = 1
+pretrained_net = './output/doctoring/ckpts/'
+iterStr = pretrained_net.split('-')[-1]
+output_dir = os.path.join('./output/doctoring/results',iterStr)
 
 def save_h5(data_description,data,data_type,path):
     h5_feats=h5py.File(path,'w')

@@ -57,6 +57,7 @@ train_classes = np.array(train_classes)
 train_index_dir = os.path.join(output_dir,'train.index')
 if os.path.exists(train_index_dir):
     index2 = faiss.read_index(train_index_dir)
+    print 'Loading index: ', train_index_dir
 else:
     train_feats = np.zeros((train_ims.shape[0],output_size))
     for ix in range(0,train_ims.shape[0],batch_size):
@@ -65,17 +66,14 @@ else:
         ff = sess.run(feat,{image_batch:batch})
         train_feats[ix:ix+ff.shape[0],:] = ff
         print 'Train features: ', ix+ff.shape[0], ' out of ' , train_feats.shape[0]
-
-    save_h5('train_ims',train_ims,'h5py.special_dtype(vlen=bytes)',os.path.join(output_dir,'trainIms.h5'))
+    save_h5('train_ims',train_ims,h5py.special_dtype(vlen=bytes),os.path.join(output_dir,'trainIms.h5'))
     save_h5('train_classes',train_classes,'i8',os.path.join(output_dir,'trainClasses.h5'))
     save_h5('train_feats',train_feats,'f',os.path.join(output_dir,'trainFeats.h5'))
-
-    train_feats = np.random.rand(train_ims.shape[0],output_size)
-
     index = faiss.IndexFlatIP(train_feats.shape[1])
     index2 = faiss.IndexIDMap(index)
     index2.add_with_ids(train_feats.astype('float32'),np.array(range(train_feats.shape[0]),dtype='int'))
     faiss.write_index(index2, train_index_dir)
+    print 'Saved index: ',train_index_dir
 
 for test_dataset, test_name in zip(test_datasets,test_names):
     test_output_dir = os.path.join(output_dir,test_name)
@@ -102,7 +100,7 @@ for test_dataset, test_name in zip(test_datasets,test_names):
         test_feats[ix:ix+ff.shape[0],:] = ff
         print 'Test features: ',ix+ff.shape[0], ' out of ' , test_feats.shape[0]
 
-    save_h5('test_ims',test_ims,'h5py.special_dtype(vlen=bytes)',os.path.join(test_output_dir,'testIms.h5'))
+    save_h5('test_ims',test_ims,h5py.special_dtype(vlen=bytes),os.path.join(test_output_dir,'testIms.h5'))
     save_h5('test_classes',test_classes,'i8',os.path.join(test_output_dir,'testClasses.h5'))
     save_h5('test_feats',test_feats,'f',os.path.join(test_output_dir,'testFeats.h5'))
 

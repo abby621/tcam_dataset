@@ -4,8 +4,9 @@ import h5py
 import os
 
 whichGPU = 3
-iterStr = 'ilsvrc2012'
-output_dir = os.path.join('./output/ilsvrc2012/results',iterStr)
+iterStr = 'places365'
+
+output_dir = os.path.join('./output/places365/results',iterStr)
 
 def save_h5(data_description,data,data_type,path):
     h5_feats=h5py.File(path,'w')
