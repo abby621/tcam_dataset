@@ -16,10 +16,10 @@ def load_h5(data_description,path):
         data = hf[data_description][:]
     return data
 
-pretrained_net = './models/ilsvrc2012.ckpt'
-iterStr = 'ilsvrc2012'
+pretrained_net = './models/places365.ckpt'
+iterStr = 'places365'
 
-output_dir = os.path.join('./output/ilsvrc2012/results',iterStr)
+output_dir = os.path.join('./output/places365/results',iterStr)
 if not os.path.exists(output_dir):
     os.makedirs(output_dir)
 
@@ -68,24 +68,23 @@ if not os.path.exists(os.path.join(output_dir,'trainFeats.h5')):
     save_h5('train_classes',train_classes,'i8',os.path.join(output_dir,'trainClasses.h5'))
     save_h5('train_feats',train_feats,'f',os.path.join(output_dir,'trainFeats.h5'))
 
-test_datasets = ['./input/test_by_hotel.txt','./input/occluded_test/by_hotel/0.txt','./input/occluded_test/by_hotel/1.txt','./input/occluded_test/by_hotel/2.txt','./input/occluded_test/by_hotel/3.txt']
-test_names = ['by_hotel','occluded0','occluded1','occluded2','occluded3']
+test_datasets = ['./input/test_by_hotel.txt','./input/occluded_test/by_hotel/0.txt','./input/occluded_test/by_hotel/1.txt','./input/occluded_test/by_hotel/2.txt','./input/occluded_test/by_hotel/3.txt','./input/test_by_chain.txt','./input/occluded_test/by_chain/0.txt','./input/occluded_test/by_chain/1.txt','./input/occluded_test/by_chain/2.txt','./input/occluded_test/by_chain/3.txt']
+test_names = ['by_hotel','occluded0','occluded1','occluded2','occluded3','by_chain','by_chain_occluded0','by_chain_occluded1','by_chain_occluded2','by_chain_occluded3']
 for test_dataset, test_name in zip(test_datasets,test_names):
     test_output_dir = os.path.join(output_dir,test_name)
     if not os.path.exists(test_output_dir):
         os.makedirs(test_output_dir)
 
-    test_data = CombinatorialTripletSet(test_dataset, mean_file, img_size, crop_size, isTraining=False)
-    test_ims = []
-    test_classes = []
-    for ims,cls in zip(test_data.files,test_data.classes):
-        for im in ims:
-            test_ims.append(im)
-            test_classes.append(int(cls))
-
-    test_ims = np.array(test_ims)
-    test_classes = np.array(test_classes)
     if not os.path.exists(os.path.join(test_output_dir,'testFeats.h5')):
+        test_data = CombinatorialTripletSet(test_dataset, mean_file, img_size, crop_size, isTraining=False)
+        test_ims = []
+        test_classes = []
+        for ims,cls in zip(test_data.files,test_data.classes):
+            for im in ims:
+                test_ims.append(im)
+                test_classes.append(int(cls))
+        test_ims = np.array(test_ims)
+        test_classes = np.array(test_classes)
         test_feats = np.zeros((test_ims.shape[0],output_size))
         for ix in range(0,test_ims.shape[0],batch_size):
             image_list = test_ims[ix:ix+batch_size]
@@ -96,3 +95,5 @@ for test_dataset, test_name in zip(test_datasets,test_names):
             save_h5('test_ims',test_ims,h5py.special_dtype(vlen=bytes),os.path.join(test_output_dir,'testIms.h5'))
             save_h5('test_classes',test_classes,'i8',os.path.join(test_output_dir,'testClasses.h5'))
             save_h5('test_feats',test_feats,'f',os.path.join(test_output_dir,'testFeats.h5'))
+    else:
+        print 'Already saved features for ', test_name

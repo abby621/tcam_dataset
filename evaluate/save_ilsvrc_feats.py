@@ -83,7 +83,6 @@ for test_dataset, test_name in zip(test_datasets,test_names):
             for im in ims:
                 test_ims.append(im)
                 test_classes.append(int(cls))
-
         test_ims = np.array(test_ims)
         test_classes = np.array(test_classes)
         test_feats = np.zeros((test_ims.shape[0],output_size))
@@ -96,3 +95,5 @@ for test_dataset, test_name in zip(test_datasets,test_names):
             save_h5('test_ims',test_ims,h5py.special_dtype(vlen=bytes),os.path.join(test_output_dir,'testIms.h5'))
             save_h5('test_classes',test_classes,'i8',os.path.join(test_output_dir,'testClasses.h5'))
             save_h5('test_feats',test_feats,'f',os.path.join(test_output_dir,'testFeats.h5'))
+    else:
+        print 'Already saved features for ', test_name
