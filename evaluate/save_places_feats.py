@@ -26,25 +26,24 @@ if not os.path.exists(output_dir):
 whichGPU = 3
 img_size = [256, 256]
 crop_size = [224, 224]
-batch_size = 120
+batch_size = 5
 output_size = 1001
 mean_file = './input/meanIm.npy'
 
 train_dataset = './input/train_by_hotel.txt'
 train_data = CombinatorialTripletSet(train_dataset, mean_file, img_size, crop_size, isTraining=False)
-image_batch = tf.placeholder(tf.float32, shape=[None, crop_size[0], crop_size[0], 3])
 
-print("Preparing network...")
-with slim.arg_scope(resnet_v2.resnet_arg_scope()):
-    _, layers = resnet_v2.resnet_v2_50(image_batch, num_classes=output_size, is_training=False)
-
-featLayer = 'resnet_v2_50/logits'
-feat = tf.squeeze(tf.nn.l2_normalize(layers[featLayer],3))
 c = tf.ConfigProto()
 c.gpu_options.visible_device_list=str(whichGPU)
 sess = tf.Session(config=c)
-saver = tf.train.Saver()
+saver = tf.train.import_meta_graph(pretrained_net.split('.ckpt')[0]+'.meta')
 saver.restore(sess, pretrained_net)
+
+graph = tf.get_default_graph()
+image_batch = graph.get_tensor_by_name("images:0")
+# TODO: is there a fully connected feature?
+feat = tf.get_default_graph().get_tensor_by_name("fc/xw_plus_b:0")
+normFeat = tf.squeeze(tf.nn.l2_normalize(feat,1))
 
 train_ims = []
 train_classes = []
@@ -57,11 +56,11 @@ train_ims = np.array(train_ims)
 train_classes = np.array(train_classes)
 
 if not os.path.exists(os.path.join(output_dir,'trainFeats.h5')):
-    train_feats = np.zeros((train_ims.shape[0],output_size))
+    train_feats = np.zeros((train_ims.shape[0],feat.shape[1]))
     for ix in range(0,train_ims.shape[0],batch_size):
         image_list = train_ims[ix:ix+batch_size]
         batch = train_data.getBatchFromImageList(image_list)
-        ff = sess.run(feat,{image_batch:batch})
+        ff = sess.run(normFeat,{image_batch:batch})
         train_feats[ix:ix+ff.shape[0],:] = ff
         print 'Train features: ', ix+ff.shape[0], ' out of ' , train_feats.shape[0]
     save_h5('train_ims',train_ims,h5py.special_dtype(vlen=bytes),os.path.join(output_dir,'trainIms.h5'))
@@ -74,7 +73,6 @@ for test_dataset, test_name in zip(test_datasets,test_names):
     test_output_dir = os.path.join(output_dir,test_name)
     if not os.path.exists(test_output_dir):
         os.makedirs(test_output_dir)
-
     if not os.path.exists(os.path.join(test_output_dir,'testFeats.h5')):
         test_data = CombinatorialTripletSet(test_dataset, mean_file, img_size, crop_size, isTraining=False)
         test_ims = []
@@ -89,7 +87,7 @@ for test_dataset, test_name in zip(test_datasets,test_names):
         for ix in range(0,test_ims.shape[0],batch_size):
             image_list = test_ims[ix:ix+batch_size]
             batch = test_data.getBatchFromImageList(image_list)
-            ff = sess.run(feat,{image_batch:batch})
+            ff = sess.run(normFeat,{image_batch:batch})
             test_feats[ix:ix+ff.shape[0],:] = ff
             print 'Test features: ',ix+ff.shape[0], ' out of ' , test_feats.shape[0]
             save_h5('test_ims',test_ims,h5py.special_dtype(vlen=bytes),os.path.join(test_output_dir,'testIms.h5'))
