@@ -245,7 +245,7 @@ def main(margin,batch_size,output_size,learning_rate,whichGPU,is_finetuning,pret
     # loss = tf.reduce_sum(tf.maximum(0.,tf.multiply(mask,margin + posDistsRep - allDists)))/batch_size
     loss = tf.reduce_mean(tf.maximum(0.,tf.multiply(mask,margin + posDistsRep - allDists)))
 
-    slightly counterintuitive to not define "init_op" first, but tf vars aren't known until added to graph
+    # slightly counterintuitive to not define "init_op" first, but tf vars aren't known until added to graph
     update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
     with tf.control_dependencies(update_ops):
         #train_op = tf.train.AdamOptimizer(learning_rate).minimize(loss)
