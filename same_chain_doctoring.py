@@ -1,6 +1,6 @@
 """
 # python same_chain_doctoring.py margin batch_size output_size learning_rate whichGPU is_finetuning pretrained_net
-# chop off last layer: python same_chain_doctoring.py .3 120 256 .0001 1 True './models/ilsvrc.ckpt'
+# chop off last layer: python same_chain_doctoring.py .3 120 256 .0001 2 True ./output/doctoring/ckpts/checkpoint-2018_08_28_2136_tcam_with_doctoring_lr0pt0001_outputSz256_margin0pt3-64999'
 # don't chop off last layer: python same_chain_doctoring.py .3 120 256 .0001 3 False './models/ilsvrc.ckpt'
 """
 
@@ -61,8 +61,6 @@ def main(margin,batch_size,output_size,learning_rate,whichGPU,is_finetuning,pret
 
     # Create data "batcher"
     train_data = SameClassSet(train_filename, mean_file, img_size, crop_size, batch_size, num_pos_examples, isTraining=is_training)
-    numClasses = len(train_data.files)
-    numIms = np.sum([len(train_data.files[idx]) for idx in range(0,numClasses)])
     datestr = datetime.now().strftime("%Y_%m_%d_%H%M")
     param_str = datestr+'_tcam_with_doctoring_lr'+str(learning_rate).replace('.','pt')+'_outputSz'+str(output_size)+'_margin'+str(margin).replace('.','pt')
     logfile_path = os.path.join(log_dir,param_str+'_train.txt')
@@ -70,10 +68,6 @@ def main(margin,batch_size,output_size,learning_rate,whichGPU,is_finetuning,pret
     print '------------'
     print ''
     print 'Going to train with the following parameters:'
-    print '# Classes: ',numClasses
-    train_log_file.write('# Classes: '+str(numClasses)+'\n')
-    print '# Ims: ',numIms
-    train_log_file.write('# Ims: '+str(numIms)+'\n')
     print 'Margin: ',margin
     train_log_file.write('Margin: '+str(margin)+'\n')
     print 'Output size: ', output_size
