@@ -1,3 +1,9 @@
+"""
+# python same_chain_doctoring.py margin batch_size output_size learning_rate whichGPU is_finetuning pretrained_net
+# chop off last layer: python same_chain_doctoring.py .3 120 256 .0001 1 True './models/ilsvrc.ckpt'
+# don't chop off last layer: python same_chain_doctoring.py .3 120 256 .0001 3 False './models/ilsvrc.ckpt'
+"""
+
 import tensorflow as tf
 from classfile import SameClassSet
 import os.path
