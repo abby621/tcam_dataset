@@ -314,7 +314,7 @@ class SameClassSet:
             temp = line.strip('\n').split(' ')
             self.chains[ctr] = {}
             for t in temp:
-                hotel = temp[0].split('/')[clsPos]
+                hotel = t.split('/')[clsPos]
                 if not hotel in self.chains[ctr].keys():
                     self.chains[ctr][hotel] = {}
                     self.chains[ctr][hotel]['ims'] = [t]
@@ -324,7 +324,7 @@ class SameClassSet:
                 if len(self.chains[ctr][hotel]['ims']) < self.numPos:
                     self.chains[ctr].pop(hotel)
                 else:
-                    self.chains[ctr][hotel]['sources'] = ([np.array([f.split('/')[4] for f in c]) for c in self.chains[ctr][hotel]['ims']])
+                    self.chains[ctr][hotel]['sources'] = np.array([im.split('/')[clsPos+1] for im in self.chains[ctr][hotel]['ims']])
             ctr += 1
 
         self.people_crop_files = glob.glob(os.path.join(peopleDir,'*.png'))
