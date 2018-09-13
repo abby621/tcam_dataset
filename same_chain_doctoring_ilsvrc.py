@@ -1,7 +1,7 @@
 """
 # python same_chain_doctoring.py margin batch_size output_size learning_rate whichGPU is_finetuning pretrained_net
-# chop off last layer: python same_chain_doctoring.py .3 120 256 .0001 1 True './models/ilsvrc.ckpt'
-# don't chop off last layer: python same_chain_doctoring.py .3 120 256 .0001 1 False './models/ilsvrc.ckpt'
+# chop off last layer: python same_chain_doctoring_ilsvrc.py .3 120 256 .0001 1 True './models/ilsvrc2012.ckpt'
+# don't chop off last layer: python same_chain_doctoring_ilsvrc.py .3 120 256 .0001 1 False './models/ilsvrc2012.ckpt'
 """
 
 import tensorflow as tf
@@ -245,10 +245,10 @@ def main(margin,batch_size,output_size,learning_rate,whichGPU,is_finetuning,pret
     # loss = tf.reduce_sum(tf.maximum(0.,tf.multiply(mask,margin + posDistsRep - allDists)))/batch_size
     loss = tf.reduce_mean(tf.maximum(0.,tf.multiply(mask,margin + posDistsRep - allDists)))
 
-    # slightly counterintuitive to not define "init_op" first, but tf vars aren't known until added to graph
+    slightly counterintuitive to not define "init_op" first, but tf vars aren't known until added to graph
     update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
     with tf.control_dependencies(update_ops):
-        # train_op = tf.train.AdamOptimizer(learning_rate).minimize(loss)
+        #train_op = tf.train.AdamOptimizer(learning_rate).minimize(loss)
         optimizer = tf.train.AdamOptimizer(learning_rate)
         train_op = slim.learning.create_train_op(loss, optimizer)
 
