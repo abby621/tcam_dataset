@@ -36,6 +36,12 @@ class CombinatorialTripletSet:
         self.numPos = num_pos
         self.batchSize = batchSize
 
+        # this is SUPER hacky -- if the test file is 'occluded' then the class is in the 5th position, not the 4th
+        if 'occluded' in image_list:
+            clsPos = 4
+        else:
+            clsPos = 3
+
         self.files = []
         self.classes = []
         # Reads a .txt file containing image paths of image sets where each line contains
@@ -47,11 +53,6 @@ class CombinatorialTripletSet:
             # if self.isTraining:
             #     while len(temp) < self.numPos: # make sure we have at least 10 images available per class
             #         temp.append(random.choice(temp))
-            # this is SUPER hacky -- if the test file is 'occluded' then the class is in the 5th position, not the 4th
-            if 'occluded' in image_list:
-                clsPos = 4
-            else:
-                clsPos = 3
             if self.isTraining:
                 if len(temp) > self.numPos:
                     self.files.append(temp)
@@ -297,6 +298,12 @@ class SameClassSet:
 
         self.numPos = num_pos
         self.batchSize = batchSize
+
+        # this is SUPER hacky -- if the test file is 'occluded' then the class is in the 5th position, not the 4th
+        if 'occluded' in image_list:
+            clsPos = 4
+        else:
+            clsPos = 3
 
         self.chains = {}
         # Reads a .txt file containing image paths of image sets where each line contains
