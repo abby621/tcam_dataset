@@ -277,7 +277,7 @@ class NonTripletSet:
 
         return img
 
-class SameClassSet(self.CombinatorialTripletSet):
+class SameClassSet(CombinatorialTripletSet):
     def __init__(self, image_list, mean_file, image_size, crop_size, batchSize=100, num_pos=10, isTraining=True, isOverfitting=False):
         self.image_size = image_size
         self.crop_size = crop_size
