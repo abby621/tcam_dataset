@@ -305,10 +305,10 @@ class SameClassSet:
         ctr = 0
         for line in f:
             temp = line.strip('\n').split(' ')
-            self.files[ctr] = {}
+            self.chains[ctr] = {}
             for t in temp:
                 hotel = temp[0].split('/')[clsPos]
-                if not hotel in self.files[ctr].keys():
+                if not hotel in self.chains[ctr].keys():
                     self.chains[ctr][hotel] = {}
                     self.chains[ctr][hotel]['ims'] = [t]
                 else:
