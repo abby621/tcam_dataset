@@ -19,7 +19,7 @@ def load_h5(data_description,path):
 whichGPU = 3
 pretrained_net = './output/sameChain/tcam/ckpts/checkpoint-2018_09_13_1336_tcam_with_doctoring_lr0pt0001_outputSz256_margin0pt3-19999'
 iterStr = pretrained_net.split('-')[-1]
-output_dir = os.path.join('./output/chain_triplepalooza/results',iterStr)
+output_dir = os.path.join('./output/sameChain/results',iterStr)
 if not os.path.exists(output_dir):
     os.makedirs(output_dir)
 
