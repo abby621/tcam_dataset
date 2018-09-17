@@ -48,7 +48,7 @@ class CombinatorialTripletSet:
         f = open(image_list, 'r')
         for line in f:
             temp = line.strip('\n').split(' ')
-            hotel = temp[0].split('/')[clsPos]
+            hotel = int(temp[0].split('/')[clsPos])
             self.hotels[hotel] = {}
             self.hotels[hotel]['ims'] = temp
         for hotel in self.hotels.keys():
