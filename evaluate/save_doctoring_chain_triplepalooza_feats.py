@@ -47,10 +47,12 @@ saver.restore(sess, pretrained_net)
 
 train_ims = []
 train_classes = []
-for ims,cls in zip(train_data.files,train_data.classes):
-    for im in ims:
-        train_ims.append(im)
-        train_classes.append(int(cls))
+f = open(train_dataset, 'r')
+for line in f:
+    temp = line.strip('\n').split(' ')
+    hotel = temp[0].split('/')[3]
+    train_ims.extend(temp)
+    train_classes.append(hotel)
 
 train_ims = np.array(train_ims)
 train_classes = np.array(train_classes)
