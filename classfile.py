@@ -42,42 +42,30 @@ class CombinatorialTripletSet:
         else:
             clsPos = 3
 
-        self.files = []
-        self.classes = []
+        self.hotels = {}
         # Reads a .txt file containing image paths of image sets where each line contains
         # all images from the same set and the first image is the anchor
         f = open(image_list, 'r')
-        ctr = 0
         for line in f:
             temp = line.strip('\n').split(' ')
-            # if self.isTraining:
-            #     while len(temp) < self.numPos: # make sure we have at least 10 images available per class
-            #         temp.append(random.choice(temp))
-            if self.isTraining:
-                if len(temp) > self.numPos:
-                    self.files.append(temp)
-                    self.classes.append(temp[0].split('/')[clsPos])
-                    ctr += 1
-            else:
-                self.files.append(temp)
-                self.classes.append(temp[0].split('/')[clsPos])
+            for t in temp:
+                hotel = t.split('/')[clsPos]
+                if not hotel in self.hotels.keys():
+                    self.hotels[hotel] = {}
+                    self.hotels[hotel]['ims'] = [t]
+                else:
+                    self.hotels[hotel]['ims'].append(t)
+            for hotel in self.hotels.keys():
+                if len(self.hotels[hotel]['ims']) < self.numPos:
+                    self.hotels[hotel].pop(hotel)
+                else:
+                    self.hotels[hotel]['sources'] = np.array([im.split('/')[clsPos+1] for im in self.hotels[hotel]['ims']])
 
-        self.source = ([np.array([f.split('/')[4] for f in c]) for c in self.files])
-
-        # if we're overfitting, limit how much data we have per class
-        if self.isOverfitting == True:
-            self.classes = self.classes[:10]
-            self.files = self.files[:10]
-            for idx in range(len(self.files)):
-                backupFiles = self.files[idx]
-                self.files[idx] = backupFiles[:10]
-
-        self.indexes = np.arange(0, len(self.files))
         self.people_crop_files = glob.glob(os.path.join(peopleDir,'*.png'))
 
     def getBatch(self):
         numClasses = self.batchSize/self.numPos # need to handle the case where we need more classes than we have?
-        classes = np.random.choice(self.classes,numClasses,replace=False)
+        classes = np.random.choice(self.hotels.keys(),numClasses,replace=False)
 
         batch = np.zeros([self.batchSize, self.crop_size[0], self.crop_size[1], 3])
 
@@ -86,8 +74,9 @@ class CombinatorialTripletSet:
 
         ctr = 0
         for cls in classes:
-            clsPaths = self.files[cls]
-            clsSources = self.source[cls]
+            cls = int(cls)
+            clsPaths = self.hotels[cls]['ims']
+            clsSources = self.hotels[cls]['sources']
             tcamInds = np.where(clsSources=='tcam')[0]
             exInds = np.where(clsSources=='expedia')[0]
             if len(tcamInds) >= self.numPos/2 and len(exInds) >= self.numPos/2:
@@ -104,7 +93,7 @@ class CombinatorialTripletSet:
             random.shuffle(exInds)
 
             for j1 in np.arange(numTcam):
-                imPath = self.files[cls][tcamInds[j1]]
+                imPath = self.hotels[cls]['ims'][tcamInds[j1]]
                 img = self.getProcessedImage(imPath)
                 if img is not None:
                     batch[ctr,:,:,:] = img
@@ -113,7 +102,7 @@ class CombinatorialTripletSet:
                 ctr += 1
 
             for j2 in np.arange(numEx):
-                imPath = self.files[cls][exInds[j2]]
+                imPath = self.hotels[cls]['ims'][exInds[j2]]
                 img = self.getProcessedImage(imPath)
                 if img is not None:
                     batch[ctr,:,:,:] = img
