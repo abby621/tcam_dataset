@@ -48,15 +48,11 @@ class CombinatorialTripletSet:
         f = open(image_list, 'r')
         for line in f:
             temp = line.strip('\n').split(' ')
-            for t in temp:
-                hotel = t.split('/')[clsPos]
-                if not hotel in self.hotels.keys():
-                    self.hotels[hotel] = {}
-                    self.hotels[hotel]['ims'] = [t]
-                else:
-                    self.hotels[hotel]['ims'].append(t)
+            hotel = temp[0].split('/')[clsPos]
+            self.hotels[hotel] = {}
+            self.hotels[hotel]['ims'] = temp
         for hotel in self.hotels.keys():
-            if len(self.hotels[hotel]['ims']) < self.numPos:
+            if len(self.hotels[hotel]['ims']) < numPos:
                 self.hotels.pop(hotel)
             else:
                 self.hotels[hotel]['sources'] = np.array([im.split('/')[clsPos+1] for im in self.hotels[hotel]['ims']])
