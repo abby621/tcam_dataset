@@ -17,9 +17,10 @@ def load_h5(data_description,path):
     return data
 
 whichGPU = 3
-pretrained_net = './output/sameChain/tcam/ckpts/checkpoint-2018_09_13_1336_tcam_with_doctoring_lr0pt0001_outputSz256_margin0pt3-19999'
+pretrained_net = './output/sameChain/ilsvrc/ckpts/checkpoint-2018_09_13_1336_tcam_with_doctoring_lr0pt0001_outputSz256_margin0pt3-89999'
 iterStr = pretrained_net.split('-')[-1]
-output_dir = os.path.join('./output/sameChain/results',iterStr)
+splitStr = pretrained_net.split('/')
+output_dir = os.path.join('/'.join(splitStr[:np.where(np.array(splitStr)=='ckpts')[0][0]]),'results',iterStr)
 if not os.path.exists(output_dir):
     os.makedirs(output_dir)
 
