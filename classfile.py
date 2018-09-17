@@ -55,11 +55,11 @@ class CombinatorialTripletSet:
                     self.hotels[hotel]['ims'] = [t]
                 else:
                     self.hotels[hotel]['ims'].append(t)
-            for hotel in self.hotels.keys():
-                if len(self.hotels[hotel]['ims']) < self.numPos:
-                    self.hotels.pop(hotel)
-                else:
-                    self.hotels[hotel]['sources'] = np.array([im.split('/')[clsPos+1] for im in self.hotels[hotel]['ims']])
+        for hotel in self.hotels.keys():
+            if len(self.hotels[hotel]['ims']) < self.numPos:
+                self.hotels.pop(hotel)
+            else:
+                self.hotels[hotel]['sources'] = np.array([im.split('/')[clsPos+1] for im in self.hotels[hotel]['ims']])
 
         self.people_crop_files = glob.glob(os.path.join(peopleDir,'*.png'))
 
