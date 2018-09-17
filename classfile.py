@@ -52,7 +52,7 @@ class CombinatorialTripletSet:
             self.hotels[hotel] = {}
             self.hotels[hotel]['ims'] = temp
         for hotel in self.hotels.keys():
-            if len(self.hotels[hotel]['ims']) < numPos:
+            if len(self.hotels[hotel]['ims']) < self.numPos:
                 self.hotels.pop(hotel)
             else:
                 self.hotels[hotel]['sources'] = np.array([im.split('/')[clsPos+1] for im in self.hotels[hotel]['ims']])
