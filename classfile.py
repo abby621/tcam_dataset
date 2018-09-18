@@ -173,7 +173,6 @@ class CombinatorialTripletSet:
         return new_img
 
 class NonTripletSet:
-    def __init__(self, image_list, mean_file, image_size, crop_size, batchSize=100, isTraining=True, isOverfitting=False):
         self.image_size = image_size
         self.crop_size = crop_size
         self.isTraining = isTraining
@@ -194,27 +193,25 @@ class NonTripletSet:
         self.numPos = num_pos
         self.batchSize = batchSize
 
-        self.files = []
-        self.classes = []
+        # this is SUPER hacky -- if the test file is 'occluded' then the class is in the 5th position, not the 4th
+        if 'occluded' in image_list:
+            clsPos = 4
+        else:
+            clsPos = 3
+
+        self.hotels = {}
         # Reads a .txt file containing image paths of image sets where each line contains
         # all images from the same set and the first image is the anchor
         f = open(image_list, 'r')
-        ctr = 0
         for line in f:
             temp = line.strip('\n').split(' ')
-            # if self.isTraining:
-            #     while len(temp) < self.numPos: # make sure we have at least 10 images available per class
-            #         temp.append(random.choice(temp))
-            # this is SUPER hacky -- if the test file is 'occluded' then the class is in the 5th position, not the 4th
-            if 'occluded' in image_list:
-                clsPos = 4
-            else:
-                clsPos = 3
-            self.files.extend(temp)
-            self.classes.extend(temp.split('/')[clsPos])
-            ctr += 1
+            hotel = int(temp[0].split('/')[clsPos])
+            self.hotels[hotel] = {}
+            self.hotels[hotel]['ims'] = temp
+        for hotel in self.hotels.keys():
+            self.hotels[hotel]['sources'] = np.array([im.split('/')[clsPos+1] for im in self.hotels[hotel]['ims']])
 
-        self.indexes = np.arange(0, len(self.files))
+        self.people_crop_files = glob.glob(os.path.join(peopleDir,'*.png'))
 
     def getBatch(self):
         batch = np.zeros([self.batch_size, self.crop_size[0], self.crop_size[1], 3])
