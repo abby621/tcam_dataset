@@ -62,8 +62,8 @@ def main(margin,batch_size,output_size,learning_rate,whichGPU,is_finetuning,pret
 
     # Create data "batcher"
     train_data = CombinatorialTripletSet(train_filename, mean_file, img_size, crop_size, batch_size, num_pos_examples, isTraining=is_training)
-    numClasses = len(train_data.files)
-    numIms = np.sum([len(train_data.files[idx]) for idx in range(0,numClasses)])
+    numClasses = len(train_data.hotels.keys())
+    numIms = np.sum([len(train_data.hotels[h]['ims']) for h in train_data.hotels.keys()])
     datestr = datetime.now().strftime("%Y_%m_%d_%H%M")
     param_str = datestr+'_tcam_with_doctoring_lr'+str(learning_rate).replace('.','pt')+'_outputSz'+str(output_size)+'_margin'+str(margin).replace('.','pt')
     logfile_path = os.path.join(log_dir,param_str+'_train.txt')
