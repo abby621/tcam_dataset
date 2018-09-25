@@ -1,5 +1,5 @@
 """
-python save_features.py 0 ./output/doctoring/ckpts/checkpoint-2018_09_24_1555_tcam_with_doctoring_lr0pt0001_outputSz256_margin0pt3-9999
+python evaluate/save_resnet_features.py 0 ./output/no_doctoring/ckpts/checkpoint-2018_09_19_0913_lr0pt0001_outputSz256_margin0pt3-75721
 """
 import tensorflow as tf
 from classfile import *
@@ -8,6 +8,7 @@ import tensorflow.contrib.slim as slim
 from nets import resnet_v2
 import faiss
 import h5py
+import sys
 
 if __name__ == "__main__":
     args = sys.argv
