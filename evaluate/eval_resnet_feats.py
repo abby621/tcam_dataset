@@ -1,8 +1,8 @@
 """
-# expedia: python evaluate/save_resnet_features.py 0 ./output/expedia/ckpts/checkpoint-2018_09_19_1314_lr0pt0001_outputSz256_margin0pt3-74157
-# no doctoring: python evaluate/save_resnet_features.py 1 ./output/no_doctoring/ckpts/checkpoint-2018_09_19_0913_lr0pt0001_outputSz256_margin0pt3-75721
-# doctoring: python evaluate/save_resnet_features.py 2 ./output/doctoring/ckpts/checkpoint-2018_08_28_2136_tcam_with_doctoring_lr0pt0001_outputSz256_margin0pt3-70841
-# ilsvrc: python evaluate/save_resnet_features.py 3 ./models/ilsvrc2012.ckpt
+# expedia: python evaluate/eval_resnet_features.py 1 ./output/expedia/ckpts/checkpoint-2018_09_19_1314_lr0pt0001_outputSz256_margin0pt3-74157
+# no doctoring: python evaluate/eval_resnet_features.py 0 ./output/no_doctoring/ckpts/checkpoint-2018_09_19_0913_lr0pt0001_outputSz256_margin0pt3-75721
+# doctoring: python evaluate/eval_resnet_features.py 2 ./output/doctoring/ckpts/checkpoint-2018_08_28_2136_tcam_with_doctoring_lr0pt0001_outputSz256_margin0pt3-70841
+# ilsvrc: python evaluate/eval_resnet_features.py 3 ./models/ilsvrc2012.ckpt
 """
 
 import numpy as np
@@ -32,7 +32,7 @@ def main(pretrained_net,whichGPU):
 
     res = faiss.StandardGpuResources()
     flat_config = faiss.GpuIndexFlatConfig()
-    flat_config.device = whichGPU
+    flat_config.device = str(whichGPU)
 
     train_feats = load_h5('train_feats',os.path.join(output_dir,'trainFeats.h5'))
     train_classes = load_h5('train_classes',os.path.join(output_dir,'trainClasses.h5'))
@@ -143,7 +143,7 @@ def main(pretrained_net,whichGPU):
 if __name__ == "__main__":
     args = sys.argv
     if len(args) < 3:
-        print 'Expected input parameters:pretrained_net,whichGPU'
+        print 'Expected input parameters:whichGPU,pretrained_net'
     whichGPU = args[1]
     pretrained_net = args[2]
     main(pretrained_net,whichGPU)
