@@ -10,14 +10,6 @@ import faiss
 import h5py
 import sys
 
-if __name__ == "__main__":
-    args = sys.argv
-    if len(args) < 3:
-        print 'Expected input parameters:pretrained_net,whichGPU'
-    whichGPU = args[1]
-    pretrained_net = args[2]
-    main(pretrained_net,whichGPU)
-
 def save_h5(data_description,data,data_type,path):
     h5_feats=h5py.File(path,'w')
     h5_feats.create_dataset(data_description, data=data, dtype=data_type)
@@ -104,3 +96,11 @@ def main(pretrained_net,whichGPU):
             save_h5('test_ims',test_ims,h5py.special_dtype(vlen=bytes),os.path.join(test_output_dir,'testIms.h5'))
             save_h5('test_classes',test_classes,'i8',os.path.join(test_output_dir,'testClasses.h5'))
             save_h5('test_feats',test_feats,'f',os.path.join(test_output_dir,'testFeats.h5'))
+
+if __name__ == "__main__":
+    args = sys.argv
+    if len(args) < 3:
+        print 'Expected input parameters:pretrained_net,whichGPU'
+    whichGPU = args[1]
+    pretrained_net = args[2]
+    main(pretrained_net,whichGPU)
