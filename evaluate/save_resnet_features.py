@@ -1,8 +1,9 @@
 """
-# expedia: python evaluate/save_resnet_features.py 1 ./output/expedia/ckpts/checkpoint-2018_09_19_1314_lr0pt0001_outputSz256_margin0pt3-74157
+# expedia: python evaluate/save_resnet_features.py 0 ./output/expedia/ckpts/checkpoint-2018_09_19_1314_lr0pt0001_outputSz256_margin0pt3-74157
 # no doctoring: python evaluate/save_resnet_features.py 0 ./output/no_doctoring/ckpts/checkpoint-2018_09_19_0913_lr0pt0001_outputSz256_margin0pt3-75721
 # doctoring: python evaluate/save_resnet_features.py 2 ./output/doctoring/ckpts/checkpoint-2018_08_28_2136_tcam_with_doctoring_lr0pt0001_outputSz256_margin0pt3-70841
 # ilsvrc: python evaluate/save_resnet_features.py 3 ./models/ilsvrc2012.ckpt
+# chain: python evaluate/save_resnet_features.py 3 ./output/sameChain/ilsvrc/ckpts/checkpoint-2018_09_19_0918_tcam_with_doctoring_lr0pt0001_outputSz256_margin0pt3-74591
 """
 import tensorflow as tf
 from classfile import *
@@ -25,7 +26,7 @@ def load_h5(data_description,path):
 
 def main(pretrained_net,whichGPU):
     train_dataset = './input/small_train_by_hotel.txt'
-    if not 'ilsvrc' in pretrained_net:
+    if not 'ilsvrc2012' in pretrained_net:
         iterStr = pretrained_net.split('-')[-1]
         splitStr = pretrained_net.split('/')
         output_dir = os.path.join('/'.join(splitStr[:np.where(np.array(splitStr)=='ckpts')[0][0]]),'results_small',iterStr)
@@ -38,7 +39,7 @@ def main(pretrained_net,whichGPU):
     img_size = [256, 256]
     crop_size = [224, 224]
     batch_size = 120
-    if not 'ilsvrc' in pretrained_net:
+    if not 'ilsvrc2012' in pretrained_net:
         output_size = 256
     else:
         output_size = 1001
