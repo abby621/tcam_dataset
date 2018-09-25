@@ -30,6 +30,8 @@ def main(pretrained_net,whichGPU):
         iterStr = 'ilsvrc2012'
         output_dir = os.path.join('./output/ilsvrc2012/results_small',iterStr)
 
+    print pretrained_net, whichGPU
+
     res = faiss.StandardGpuResources()
     flat_config = faiss.GpuIndexFlatConfig()
     flat_config.device = whichGPU
