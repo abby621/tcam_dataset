@@ -38,7 +38,10 @@ def main(pretrained_net,whichGPU):
     img_size = [256, 256]
     crop_size = [224, 224]
     batch_size = 120
-    output_size = 256
+    if not 'ilsvrc' in pretrained_net:
+        output_size = 256
+    else:
+        output_size = 1001
     mean_file = './input/meanIm.npy'
 
     train_data = NonTripletSet(train_dataset, mean_file, img_size, crop_size, isTraining=False)
