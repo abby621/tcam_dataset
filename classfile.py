@@ -359,7 +359,7 @@ class SameClassSet(CombinatorialTripletSet):
         batch = self.getProcessedImages(ims)
         return batch, labels, ims
 
-    def getProcessedImages(ims):
+    def getProcessedImages(self,ims):
         numIms = len(ims)
         imgs = np.array([cv2.resize(cv2.imread(image_file),(self.image_size[0], self.image_size[1])) for image_file in ims])
 
