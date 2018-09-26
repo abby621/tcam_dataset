@@ -356,7 +356,7 @@ class SameClassSet(CombinatorialTripletSet):
             ims.extend(list(clsPaths[tcamInds[:numTcam]]))
             ims.extend(list(clsPaths[exInds[:numEx]]))
 
-        batch = getProcessedImages(ims)
+        batch = self.getProcessedImages(ims)
         return batch, labels, ims
 
     def getProcessedImages(ims):
