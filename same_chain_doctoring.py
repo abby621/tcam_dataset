@@ -277,10 +277,12 @@ def main(margin,batch_size,output_size,learning_rate,whichGPU,is_finetuning,pret
         start_time = time.time()
         batch, labels, ims = train_data.getBatch()
         people_masks = train_data.getPeopleMasks()
+        batch_time = time.time() - start_time
+        start_time = time.time()
         _, loss_val = sess.run([train_op, loss], feed_dict={image_batch: batch, people_mask_batch: people_masks})
         end_time = time.time()
         duration = end_time-start_time
-        out_str = 'Step %d: loss = %.6f -- (%.3f sec)' % (step, loss_val,duration)
+        out_str = 'Step %d: loss = %.6f -- (batch creation: %.3f | training: %.3f sec)' % (step, loss_val,batch_time,duration)
         # print(out_str)
         if step % summary_iters == 0:
             print(out_str)
