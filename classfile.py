@@ -315,9 +315,21 @@ class SameClassSet(CombinatorialTripletSet):
     def getBatch(self):
         numClasses = self.batchSize/self.numPos
         chain = np.random.choice(self.chains.keys())
-        while len(self.chains[chain].keys()) < numClasses:
+
+        # half of the classes in the batch should be from the same chain -- this is a version of hard mining,
+        # making it so half of the negative examples we see are "harder" because they come from the same chain
+        classes = np.zeros(numClasses)
+        while len(self.chains[chain].keys()) < numClasses/2:
             chain = np.random.choice(self.chains.keys())
-        classes = np.random.choice(self.chains[chain].keys(),numClasses,replace=False)
+
+        classes[:numClasses/2] = np.random.choice(self.chains[chain].keys(),numClasses/2,replace=False)
+
+        # the other half of the classes should be from random hotels
+        for iy in range(numClasses/2,numClasses):
+            chain2 = np.random.choice(self.chains.keys())
+            while chain2 == chain:
+                chain2 = np.random.choice(self.chains.keys())
+            classes[iy] = np.random.choice(self.chains[chain2].keys())
 
         batch = np.zeros([self.batchSize, self.crop_size[0], self.crop_size[1], 3])
 
