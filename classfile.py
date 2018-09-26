@@ -318,7 +318,7 @@ class SameClassSet(CombinatorialTripletSet):
 
         # half of the classes in the batch should be from the same chain -- this is a version of hard mining,
         # making it so half of the negative examples we see are "harder" because they come from the same chain
-        classes = np.zeros(numClasses)
+        classes = np.zeros(numClasses,dtype='int')
         while len(self.chains[chain].keys()) < numClasses/2:
             chain = np.random.choice(self.chains.keys())
 
