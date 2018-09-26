@@ -319,10 +319,12 @@ class SameClassSet(CombinatorialTripletSet):
         # half of the classes in the batch should be from the same chain -- this is a version of hard mining,
         # making it so half of the negative examples we see are "harder" because they come from the same chain
         classes = np.zeros(numClasses,dtype='int')
+        chains = np.zeros(numClasses,dtype='int')
         while len(self.chains[chain].keys()) < numClasses/2:
             chain = np.random.choice(self.chains.keys())
 
         classes[:numClasses/2] = np.random.choice(self.chains[chain].keys(),numClasses/2,replace=False)
+        chains[:numClasses/2] = chain
 
         # the other half of the classes should be from random hotels
         for iy in range(numClasses/2,numClasses):
@@ -330,6 +332,7 @@ class SameClassSet(CombinatorialTripletSet):
             while chain2 == chain:
                 chain2 = np.random.choice(self.chains.keys())
             classes[iy] = np.random.choice(self.chains[chain2].keys())
+            chains[iy] = chain2
 
         batch = np.zeros([self.batchSize, self.crop_size[0], self.crop_size[1], 3])
 
@@ -337,7 +340,7 @@ class SameClassSet(CombinatorialTripletSet):
         ims = []
 
         ctr = 0
-        for cls in classes:
+        for cls,chain in zip(classes,chains):
             clsPaths = self.chains[chain][cls]['ims']
             clsSources = self.chains[chain][cls]['sources']
             tcamInds = np.where(clsSources=='tcam')[0]
