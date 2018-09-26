@@ -334,15 +334,11 @@ class SameClassSet(CombinatorialTripletSet):
             classes[iy] = np.random.choice(self.chains[chain2].keys())
             chains[iy] = chain2
 
-        batch = np.zeros([self.batchSize, self.crop_size[0], self.crop_size[1], 3])
-
-        labels = np.zeros([self.batchSize],dtype='int')
         ims = []
-
-        ctr = 0
+        labels = [c for c in classes for ix in range(self.numPos)]
         for cls,chain in zip(classes,chains):
-            clsPaths = self.chains[chain][cls]['ims']
-            clsSources = self.chains[chain][cls]['sources']
+            clsPaths = np.array(self.chains[chain][cls]['ims'])
+            clsSources = np.array(self.chains[chain][cls]['sources'])
             tcamInds = np.where(clsSources=='tcam')[0]
             exInds = np.where(clsSources=='expedia')[0]
             if len(tcamInds) >= self.numPos/2 and len(exInds) >= self.numPos/2:
@@ -357,23 +353,25 @@ class SameClassSet(CombinatorialTripletSet):
 
             random.shuffle(tcamInds)
             random.shuffle(exInds)
+            ims.extend(list(clsPaths[tcamInds[:numTcam]]))
+            ims.extend(list(clsPaths[exInds[:numEx]]))
 
-            for j1 in np.arange(numTcam):
-                imPath = clsPaths[tcamInds[j1]]
-                img = self.getProcessedImage(imPath)
-                if img is not None:
-                    batch[ctr,:,:,:] = img
-                labels[ctr] = cls
-                ims.append(imPath)
-                ctr += 1
-
-            for j2 in np.arange(numEx):
-                imPath = clsPaths[exInds[j2]]
-                img = self.getProcessedImage(imPath)
-                if img is not None:
-                    batch[ctr,:,:,:] = img
-                labels[ctr] = cls
-                ims.append(imPath)
-                ctr += 1
-
+        batch = getProcessedImages(ims)
         return batch, labels, ims
+
+    def getProcessedImages(ims):
+        numIms = len(ims)
+        imgs = np.array([cv2.resize(cv2.imread(image_file),(self.image_size[0], self.image_size[1])) for image_file in ims])
+
+        if self.isTraining and not self.isOverfitting and random.random() > 0.5:
+            imgs = np.array([cv2.flip(img,1) if random.random() > 0.5 else img for img in imgs])
+
+        if self.isTraining and not self.isOverfitting:
+            top = np.random.randint(0,self.image_size[0] - self.crop_size[0],numIms)
+            left = np.random.randint(0,self.image_size[1] - self.crop_size[1],numIms)
+        else:
+            top = int(round((self.image_size[0] - self.crop_size[0])/2))
+            left = int(round((self.image_size[1] - self.crop_size[1])/2))
+
+        imgs = np.array([imgs[ix,top[ix]:(top[ix]+self.crop_size[0]),left[ix]:(left[ix]+self.crop_size[1]),:]-self.meanImage for ix in range(numIms)])
+        return imgs
