@@ -297,7 +297,7 @@ class SameClassSet(CombinatorialTripletSet):
             temp = line.strip('\n').split(' ')
             self.chains[ctr] = {}
             for t in temp:
-                hotel = t.split('/')[clsPos]
+                hotel = int(t.split('/')[clsPos])
                 if not hotel in self.chains[ctr].keys():
                     self.chains[ctr][hotel] = {}
                     self.chains[ctr][hotel]['ims'] = [t]
