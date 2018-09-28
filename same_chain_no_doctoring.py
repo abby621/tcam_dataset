@@ -1,7 +1,8 @@
 """
-# python same_chain_no_doctoring.py batch_size output_size learning_rate whichGPU is_finetuning pretrained_net
-# chop off last layer: python same_chain_no_doctoring.py 120 256 .0001 2 True './models/ilsvrc2012.ckpt'
-# don't chop off last layer: python same_chain_no_doctoring.py 120 256 .0001 2 False './output/doctoring/ckpts/checkpoint-2018_08_28_2136_tcam_with_doctoring_lr0pt0001_outputSz256_margin0pt3-64999'
+# python same_chain_no_doctoring.py same_chain_margin diff_chain_margin batch_size output_size learning_rate whichGPU is_finetuning is_overfitting pretrained_net
+# overfitting: python same_chain_no_doctoring.py .1 .3 120 256 .0001 2 False False None
+# chop off last layer: python same_chain_no_doctoring.py .1 .3 120 256 .0001 2 True False './models/ilsvrc2012.ckpt'
+# don't chop off last layer: python same_chain_no_doctoring.py 120 256 .0001 2 False False './output/doctoring/ckpts/checkpoint-2018_08_28_2136_tcam_with_doctoring_lr0pt0001_outputSz256_margin0pt3-64999'
 """
 
 import tensorflow as tf
@@ -23,7 +24,7 @@ import time
 import sys
 import itertools
 
-def main(batch_size,output_size,learning_rate,whichGPU,is_finetuning,pretrained_net):
+def main(same_chain_margin,diff_chain_margin,batch_size,output_size,learning_rate,whichGPU,is_finetuning,is_overfitting,pretrained_net):
     def handler(signum, frame):
         print 'Saving checkpoint before closing'
         pretrained_net = os.path.join(ckpt_dir, 'checkpoint-'+param_str)
@@ -47,8 +48,8 @@ def main(batch_size,output_size,learning_rate,whichGPU,is_finetuning,pretrained_
 
     is_training = True
 
-    margin = .5
-    same_chain_margin = .2
+    margin = float(diff_chain_margin)
+    same_chain_margin = float(same_chain_margin)
     batch_size = int(batch_size)
     output_size = int(output_size)
     learning_rate = float(learning_rate)
@@ -62,6 +63,18 @@ def main(batch_size,output_size,learning_rate,whichGPU,is_finetuning,pretrained_
 
     # Create data "batcher"
     train_data = SameClassSet(train_filename, mean_file, img_size, crop_size, batch_size, num_pos_examples, isTraining=is_training)
+
+    if is_overfitting:
+        good_chains = np.random.choice(train_data.chains.keys(),3,replace=False)
+        for chain in train_data.chains.keys():
+            if not chain in good_chains:
+                train_data.chains.pop(chain)
+            else:
+                good_hotels = train_data.chains[chain].keys()[:num_pos_examples]
+                for hotel in train_data.chains[chain].keys():
+                    if not hotel in good_hotels:
+                        train_data.chains[chain].pop(hotel)
+
     datestr = datetime.now().strftime("%Y_%m_%d_%H%M")
     param_str = datestr+'_tcam_with_doctoring_lr'+str(learning_rate).replace('.','pt')+'_outputSz'+str(output_size)+'_margin'+str(margin).replace('.','pt')
     logfile_path = os.path.join(log_dir,param_str+'_train.txt')
@@ -195,13 +208,16 @@ def main(batch_size,output_size,learning_rate,whichGPU,is_finetuning,pretrained_
 
 if __name__ == "__main__":
     args = sys.argv
-    if len(args) < 7:
-        print 'Expected input parameters: batch_size,output_size,learning_rate,whichGPU,is_finetuning,pretrained_net'
+    if len(args) < 10:
+        print 'Expected input parameters: same_chain_margin,diff_chain_margin,batch_size,output_size,learning_rate,whichGPU,is_finetuning,is_overfitting,pretrained_net'
         return
-    batch_size = args[1]
-    output_size = args[2]
-    learning_rate = args[3]
-    whichGPU = args[4]
-    is_finetuning = args[5]
-    pretrained_net = args[6]
-    main(batch_size,output_size,learning_rate,whichGPU,is_finetuning,pretrained_net)
+    same_chain_margin = args[1]
+    diff_chain_margin = args[2]
+    batch_size = args[3]
+    output_size = args[4]
+    learning_rate = args[5]
+    whichGPU = args[6]
+    is_finetuning = args[7]
+    is_overfitting = args[8]
+    pretrained_net = args[9]
+    main(same_chain_margin,diff_chain_margin,batch_size,output_size,learning_rate,whichGPU,is_finetuning,is_overfitting,pretrained_net)
