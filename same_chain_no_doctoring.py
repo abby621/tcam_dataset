@@ -2,7 +2,7 @@
 # python same_chain_no_doctoring.py same_chain_margin diff_chain_margin batch_size output_size learning_rate whichGPU is_finetuning is_overfitting pretrained_net
 # overfitting: python same_chain_no_doctoring.py .1 .3 120 256 .0001 2 False False None
 # chop off last layer: python same_chain_no_doctoring.py .1 .3 120 256 .0001 2 True False './models/ilsvrc2012.ckpt'
-# don't chop off last layer: python same_chain_no_doctoring.py 120 256 .0001 2 False False './output/doctoring/ckpts/checkpoint-2018_08_28_2136_tcam_with_doctoring_lr0pt0001_outputSz256_margin0pt3-64999'
+# don't chop off last layer: python same_chain_no_doctoring.py 120 256 .0001 2 False False './models/ilsvrc2012.ckpt'
 """
 
 import tensorflow as tf
@@ -210,7 +210,6 @@ if __name__ == "__main__":
     args = sys.argv
     if len(args) < 10:
         print 'Expected input parameters: same_chain_margin,diff_chain_margin,batch_size,output_size,learning_rate,whichGPU,is_finetuning,is_overfitting,pretrained_net'
-        return
     same_chain_margin = args[1]
     diff_chain_margin = args[2]
     batch_size = args[3]
