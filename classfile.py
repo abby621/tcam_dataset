@@ -330,7 +330,7 @@ class SameClassSet(CombinatorialTripletSet):
         # the other half of the classes should be from random hotels
         for iy in range(numClasses/2,numClasses):
             chain2 = np.random.choice(self.chains.keys())
-            while chain2 == chain or len(self.chains[chain2].keys()) < 1:
+            while chain2 in chains or len(self.chains[chain2].keys()) < 1:
                 chain2 = np.random.choice(self.chains.keys())
             classes[iy] = np.random.choice(self.chains[chain2].keys())
             chains[iy] = chain2
