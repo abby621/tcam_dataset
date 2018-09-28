@@ -302,7 +302,8 @@ class SameClassSet(CombinatorialTripletSet):
                     self.chains[ctr][hotel] = {}
                     self.chains[ctr][hotel]['ims'] = [t]
                 else:
-                    self.chains[ctr][hotel]['ims'].append(t)
+                    if t not in self.chains[ctr][hotel]['ims']:
+                        self.chains[ctr][hotel]['ims'].append(t)
             for hotel in self.chains[ctr].keys():
                 if len(self.chains[ctr][hotel]['ims']) < self.numPos:
                     self.chains[ctr].pop(hotel)
