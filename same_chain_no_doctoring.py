@@ -195,8 +195,9 @@ def main(batch_size,output_size,learning_rate,whichGPU,is_finetuning,pretrained_
 
 if __name__ == "__main__":
     args = sys.argv
-    if len(args) < 8:
-        print 'Expected input parameters: batch_size,output_size,learning_rate,whichGPU,is_finetuning'
+    if len(args) < 7:
+        print 'Expected input parameters: batch_size,output_size,learning_rate,whichGPU,is_finetuning,pretrained_net'
+        return
     batch_size = args[1]
     output_size = args[2]
     learning_rate = args[3]
