@@ -140,9 +140,7 @@ def main(same_chain_margin,diff_chain_margin,batch_size,output_size,learning_rat
     allDists = tf.tile(tf.expand_dims(D,2),(1,1,num_pos_examples))
 
     all_loss = tf.maximum(0.,tf.multiply(same_class_mask,posDistsRep - allDists + chain_based_margin))
-    non_zero_mask = tf.greater(all_loss, 0)
-    non_zero_array = tf.boolean_mask(all_loss, non_zero_mask)
-    loss = tf.reduce_mean(non_zero_array)
+    loss = tf.reduce_mean(all_loss)
 
     # slightly counterintuitive to not define "init_op" first, but tf vars aren't known until added to graph
     update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
@@ -174,7 +172,7 @@ def main(same_chain_margin,diff_chain_margin,batch_size,output_size,learning_rat
     ctr  = 0
     for step in range(num_iters):
         start_time = time.time()
-        batch, labels, ims = train_data.getBatch()
+        batch, labels, chains, ims = train_data.getBatch()
         people_masks = train_data.getPeopleMasks()
         batch_time = time.time() - start_time
         start_time = time.time()
