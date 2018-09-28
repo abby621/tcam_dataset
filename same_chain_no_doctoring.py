@@ -1,6 +1,6 @@
 """
 # python same_chain_no_doctoring.py same_chain_margin diff_chain_margin batch_size output_size learning_rate whichGPU is_finetuning is_overfitting pretrained_net
-# overfitting: python same_chain_no_doctoring.py .1 .3 120 256 .0001 2 False False None
+# overfitting: python same_chain_no_doctoring.py .1 .3 120 256 .0001 2 False True None
 # chop off last layer: python same_chain_no_doctoring.py .1 .3 120 256 .0001 2 True False './models/ilsvrc2012.ckpt'
 # don't chop off last layer: python same_chain_no_doctoring.py 120 256 .0001 2 False False './models/ilsvrc2012.ckpt'
 """
@@ -64,7 +64,7 @@ def main(same_chain_margin,diff_chain_margin,batch_size,output_size,learning_rat
     # Create data "batcher"
     train_data = SameClassSet(train_filename, mean_file, img_size, crop_size, batch_size, num_pos_examples, isTraining=is_training)
 
-    if is_overfitting:
+    if is_overfitting.lower() == 'true':
         good_chains = np.random.choice(train_data.chains.keys(),3,replace=False)
         for chain in train_data.chains.keys():
             if not chain in good_chains:
