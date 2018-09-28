@@ -336,7 +336,6 @@ class SameClassSet(CombinatorialTripletSet):
 
         ims = []
         labels = [c for c in classes for ix in range(self.numPos)]
-        chains = [c for c in chains for ix in range(self.numPos)]
         for cls,chain in zip(classes,chains):
             clsPaths = np.array(self.chains[chain][cls]['ims'])
             clsSources = np.array(self.chains[chain][cls]['sources'])
@@ -358,6 +357,7 @@ class SameClassSet(CombinatorialTripletSet):
             ims.extend(list(clsPaths[exInds[:numEx]]))
 
         batch = self.getProcessedImages(ims)
+        chains = [c for c in chains for ix in range(self.numPos)]
         return batch, labels, chains, ims
 
     def getProcessedImages(self,ims):
