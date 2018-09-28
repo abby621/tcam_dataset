@@ -1,7 +1,7 @@
 """
-# python same_chain_doctoring.py margin batch_size output_size learning_rate whichGPU is_finetuning pretrained_net
-# chop off last layer: python same_chain_doctoring.py .3 120 256 .0001 2 True './output/doctoring/ckpts/checkpoint-2018_08_28_2136_tcam_with_doctoring_lr0pt0001_outputSz256_margin0pt3-64999'
-# don't chop off last layer: python same_chain_doctoring.py .3 120 256 .0001 2 False './output/doctoring/ckpts/checkpoint-2018_08_28_2136_tcam_with_doctoring_lr0pt0001_outputSz256_margin0pt3-64999'
+# python same_chain_doctoring_no_batch_norm.py margin batch_size output_size learning_rate whichGPU is_finetuning pretrained_net
+# chop off last layer: python same_chain_doctoring_no_batch_norm.py .3 120 256 .0001 0 True './output/doctoring/ckpts/checkpoint-2018_08_28_2136_tcam_with_doctoring_lr0pt0001_outputSz256_margin0pt3-64999'
+# don't chop off last layer: python same_chain_doctoring_no_batch_norm.py .3 120 256 .0001 2 False './output/doctoring/ckpts/checkpoint-2018_08_28_2136_tcam_with_doctoring_lr0pt0001_outputSz256_margin0pt3-64999'
 """
 
 import tensorflow as tf

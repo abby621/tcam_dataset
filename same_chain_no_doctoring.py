@@ -1,7 +1,7 @@
 """
-# python same_chain_doctoring.py batch_size output_size learning_rate whichGPU is_finetuning pretrained_net
-# chop off last layer: python same_chain_doctoring.py 120 256 .0001 2 True './models/ilsvrc2012.ckpt'
-# don't chop off last layer: python same_chain_doctoring.py 120 256 .0001 2 False './output/doctoring/ckpts/checkpoint-2018_08_28_2136_tcam_with_doctoring_lr0pt0001_outputSz256_margin0pt3-64999'
+# python same_chain_no_doctoring.py batch_size output_size learning_rate whichGPU is_finetuning pretrained_net
+# chop off last layer: python same_chain_no_doctoring.py 120 256 .0001 2 True './models/ilsvrc2012.ckpt'
+# don't chop off last layer: python same_chain_no_doctoring.py 120 256 .0001 2 False './output/doctoring/ckpts/checkpoint-2018_08_28_2136_tcam_with_doctoring_lr0pt0001_outputSz256_margin0pt3-64999'
 """
 
 import tensorflow as tf
@@ -33,8 +33,8 @@ def main(batch_size,output_size,learning_rate,whichGPU,is_finetuning,pretrained_
 
     signal.signal(signal.SIGINT, handler)
 
-    ckpt_dir = './output/sameChain/tcam/ckpts'
-    log_dir = './output/sameChain/tcam/logs'
+    ckpt_dir = './output/sameChain/no_doctoring/ckpts'
+    log_dir = './output/sameChain/no_doctoring/logs'
     train_filename = './input/train_by_chain.txt'
     mean_file = './input/meanIm.npy'
 
@@ -112,8 +112,8 @@ def main(batch_size,output_size,learning_rate,whichGPU,is_finetuning,pretrained_
     same_class_mask = ((1-bad_negatives)*(1-bad_positives)).astype('float32')
 
     chain_based_margin = np.zeros(same_class_mask.shape)
+    chain_based_margin[:] = margin
     chain_based_margin[:batch_size/2,:batch_size/2,:] = same_chain_margin
-    chain_based_margin[batch_size/2:,batch_size/2:,:] = margin
 
     feat = tf.squeeze(tf.nn.l2_normalize(layers[featLayer],3))
     expanded_a = tf.expand_dims(feat, 1)
@@ -126,7 +126,7 @@ def main(batch_size,output_size,learning_rate,whichGPU,is_finetuning,pretrained_
     posDistsRep = tf.tile(shiftPosDists,(batch_size,1,1))
     allDists = tf.tile(tf.expand_dims(D,2),(1,1,num_pos_examples))
 
-    all_loss = tf.maximum(0.,tf.multiply(same_class_mask,chain_based_margin + posDistsRep - allDists))
+    all_loss = tf.maximum(0.,tf.multiply(same_class_mask,posDistsRep - allDists + chain_based_margin))
     non_zero_mask = tf.greater(all_loss, 0)
     non_zero_array = tf.boolean_mask(all_loss, non_zero_mask)
     loss = tf.reduce_mean(non_zero_array)

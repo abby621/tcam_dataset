@@ -1,8 +1,7 @@
 """
-# python same_chain_doctoring.py margin batch_size output_size learning_rate whichGPU is_finetuning pretrained_net
-# chop off last layer: python same_chain_doctoring.py .3 120 256 .0001 2 True './models/ilsvrc2012.ckpt'
-# don't chop off last layer: python same_chain_doctoring.py .3 120 256 .0001 2 False './output/doctoring/ckpts/checkpoint-2018_08_28_2136_tcam_with_doctoring_lr0pt0001_outputSz256_margin0pt3-64999'
-"""
+# python same_chain_doctoring.py batch_size output_size learning_rate whichGPU is_finetuning pretrained_net
+# chop off last layer: python same_chain_doctoring.py 120 256 .0001 2 True './models/ilsvrc2012.ckpt'
+# don't chop off last layer: python same_chain_doctoring.py 120 256 .0001 2 False './models/ilsvrc2012.ckpt'
 
 import tensorflow as tf
 from classfile import SameClassSet
@@ -23,7 +22,7 @@ import time
 import sys
 import itertools
 
-def main(margin,batch_size,output_size,learning_rate,whichGPU,is_finetuning,pretrained_net):
+def main(batch_size,output_size,learning_rate,whichGPU,is_finetuning,pretrained_net):
     def handler(signum, frame):
         print 'Saving checkpoint before closing'
         pretrained_net = os.path.join(ckpt_dir, 'checkpoint-'+param_str)
@@ -33,8 +32,8 @@ def main(margin,batch_size,output_size,learning_rate,whichGPU,is_finetuning,pret
 
     signal.signal(signal.SIGINT, handler)
 
-    ckpt_dir = './output/sameChain/tcam/ckpts'
-    log_dir = './output/sameChain/tcam/logs'
+    ckpt_dir = './output/sameChain/doctoring/ckpts'
+    log_dir = './output/sameChain/doctoring/logs'
     train_filename = './input/train_by_chain.txt'
     mean_file = './input/meanIm.npy'
 
@@ -47,7 +46,8 @@ def main(margin,batch_size,output_size,learning_rate,whichGPU,is_finetuning,pret
 
     is_training = True
 
-    margin = float(margin)
+    margin = .5
+    same_chain_margin = .2
     batch_size = int(batch_size)
     output_size = int(output_size)
     learning_rate = float(learning_rate)
@@ -310,12 +310,11 @@ def main(margin,batch_size,output_size,learning_rate,whichGPU,is_finetuning,pret
 if __name__ == "__main__":
     args = sys.argv
     if len(args) < 8:
-        print 'Expected input parameters: margin,batch_size,output_size,learning_rate,whichGPU,is_finetuning'
-    margin = args[1]
-    batch_size = args[2]
-    output_size = args[3]
-    learning_rate = args[4]
-    whichGPU = args[5]
-    is_finetuning = args[6]
-    pretrained_net = args[7]
-    main(margin,batch_size,output_size,learning_rate,whichGPU,is_finetuning,pretrained_net)
+        print 'Expected input parameters: batch_size,output_size,learning_rate,whichGPU,is_finetuning'
+    batch_size = args[1]
+    output_size = args[2]
+    learning_rate = args[3]
+    whichGPU = args[4]
+    is_finetuning = args[5]
+    pretrained_net = args[6]
+    main(batch_size,output_size,learning_rate,whichGPU,is_finetuning,pretrained_net)
