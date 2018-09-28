@@ -76,7 +76,7 @@ def main(same_chain_margin,diff_chain_margin,batch_size,output_size,learning_rat
                         train_data.chains[chain].pop(hotel)
 
     datestr = datetime.now().strftime("%Y_%m_%d_%H%M")
-    param_str = datestr+'_tcam_with_doctoring_lr'+str(learning_rate).replace('.','pt')+'_outputSz'+str(output_size)+'_margin'+str(margin).replace('.','pt')
+    param_str = datestr+'_lr'+str(learning_rate).replace('.','pt')+'_outputSz'+str(output_size)+'_margin'+str(margin).replace('.','pt')
     logfile_path = os.path.join(log_dir,param_str+'_train.txt')
     train_log_file = open(logfile_path,'a')
     print '------------'
@@ -140,6 +140,8 @@ def main(same_chain_margin,diff_chain_margin,batch_size,output_size,learning_rat
     allDists = tf.tile(tf.expand_dims(D,2),(1,1,num_pos_examples))
 
     all_loss = tf.maximum(0.,tf.multiply(same_class_mask,posDistsRep - allDists + chain_based_margin))
+    non_zero_mask = tf.greater(all_loss, 0)
+    non_zero_array = tf.boolean_mask(all_loss, non_zero_mask)
     loss = tf.reduce_mean(all_loss)
 
     # slightly counterintuitive to not define "init_op" first, but tf vars aren't known until added to graph
@@ -175,10 +177,10 @@ def main(same_chain_margin,diff_chain_margin,batch_size,output_size,learning_rat
         batch, labels, chains, ims = train_data.getBatch()
         batch_time = time.time() - start_time
         start_time = time.time()
-        _, loss_val = sess.run([train_op, loss], feed_dict={image_batch: batch})
+        _, nza, loss_val = sess.run([train_op,non_zero_array, loss], feed_dict={image_batch: batch})
         end_time = time.time()
         duration = end_time-start_time
-        out_str = 'Step %d: loss = %.6f -- (batch creation: %.3f | training: %.3f sec)' % (step, loss_val,batch_time,duration)
+        out_str = 'Step %d: loss = %.6f | non-zero triplets: %d -- (batch creation: %.3f | training: %.3f sec)' % (step, loss_val, nza.shape[0], batch_time,duration)
         # print(out_str)
         if step % summary_iters == 0:
             print(out_str)
