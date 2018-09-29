@@ -3,6 +3,7 @@
 # no doctoring: python evaluate/eval_resnet_feats.py 0 ./output/no_doctoring/ckpts/checkpoint-2018_09_19_0913_lr0pt0001_outputSz256_margin0pt3-75721
 # doctoring: python evaluate/eval_resnet_feats.py 2 ./output/doctoring/ckpts/checkpoint-2018_08_28_2136_tcam_with_doctoring_lr0pt0001_outputSz256_margin0pt3-70841
 # ilsvrc: python evaluate/eval_resnet_feats.py 3 ./models/ilsvrc2012.ckpt
+# chain: python evaluate/eval_resnet_feats.py 3 ./output/sameChain/no_doctoring/ckpts/checkpoint-2018_09_28_1402_lr0pt0001_outputSz256_margin0pt4-760
 """
 
 import numpy as np
@@ -58,7 +59,7 @@ def main(pretrained_net,whichGPU):
             row_sums = result_dists.sum(axis=1)
             result_dists_normalized = result_dists / row_sums[:, np.newaxis]
             result_classes = train_classes[result_inds]
-            resultInfo = [[unique_classes_sorted[np.searchsorted(unique_classes[unique_classes_sorted], np.unique(r,return_index=True)[0])],d[np.unique(r,return_index=True)[1]]] for r,d in zip(result_classes,result_dists_normalized)]
+            resultInfo = [[unique_classes_sorted[np.searchsorted(unique_classes[unique_classes_sorted], np.unique(r,return_index=True)[0])]-1,d[np.unique(r,return_index=True)[1]]] for r,d in zip(result_classes,result_dists_normalized)]
             for idx in range(len(resultInfo)):
                 classification_scores[aa+idx,resultInfo[idx][0]] = resultInfo[idx][1]
         sorted_classes = np.zeros((test_feats.shape[0],unique_classes.shape[0]))
@@ -121,7 +122,7 @@ def main(pretrained_net,whichGPU):
             row_sums = result_dists.sum(axis=1)
             result_dists_normalized = result_dists / row_sums[:, np.newaxis]
             result_chains = train_class_to_chain[result_inds]
-            resultInfo = [[unique_chains_sorted[np.searchsorted(unique_chains[unique_chains_sorted], np.unique(r,return_index=True)[0])],d[np.unique(r,return_index=True)[1]]] for r,d in zip(result_chains,result_dists_normalized)]
+            resultInfo = [[unique_chains_sorted[np.searchsorted(unique_chains[unique_chains_sorted]-1, np.unique(r,return_index=True)[0])],d[np.unique(r,return_index=True)[1]]] for r,d in zip(result_chains,result_dists_normalized)]
             for idx in range(len(resultInfo)):
                 chain_classification_scores[aa+idx,resultInfo[idx][0]] = resultInfo[idx][1]
         sorted_chains = np.zeros((test_feats.shape[0],unique_chains.shape[0]))
