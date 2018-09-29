@@ -330,8 +330,10 @@ class SameClassSet(CombinatorialTripletSet):
         # the other half of the classes should be from random hotels
         for iy in range(numClasses/2,numClasses):
             chain2 = np.random.choice(self.chains.keys())
-            while chain2 == chain or len(self.chains[chain2].keys()) < 1:
+            numHotelsAvailable = np.sum(np.array([1 for h in self.chains[chains2].keys() if h not in classes]))
+            while chain2 == chain or numHotelsAvailable < 1:
                 chain2 = np.random.choice(self.chains.keys())
+                numHotelsAvailable = np.sum(np.array([1 for h in self.chains[chains2].keys() if h not in classes]))
             hotel = np.random.choice(self.chains[chain2].keys())
             while hotel in classes:
                 hotel = np.random.choice(self.chains[chain2].keys())
@@ -340,9 +342,9 @@ class SameClassSet(CombinatorialTripletSet):
 
         ims = []
         labels = [c for c in classes for ix in range(self.numPos)]
-        for cls,chain in zip(classes,chains):
-            clsPaths = np.array(self.chains[chain][cls]['ims'])
-            clsSources = np.array(self.chains[chain][cls]['sources'])
+        for hotel,chain in zip(classes,chains):
+            clsPaths = np.array(self.chains[chain][hotel]['ims'])
+            clsSources = np.array(self.chains[chain][hotel]['sources'])
             tcamInds = np.where(clsSources=='tcam')[0]
             exInds = np.where(clsSources=='expedia')[0]
             if len(tcamInds) >= self.numPos/2 and len(exInds) >= self.numPos/2:
