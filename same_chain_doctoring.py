@@ -1,7 +1,8 @@
 """
-# python same_chain_doctoring.py same_chain_margin diff_chain_margin batch_size output_size learning_rate whichGPU is_finetuning pretrained_net
-# chop off last layer: python same_chain_doctoring.py .2 .4 120 256 .0001 2 True './models/ilsvrc2012.ckpt'
-# don't chop off last layer: python same_chain_doctoring.py .2 .4 120 256 .0001 2 False './models/ilsvrc2012.ckpt'
+# python same_chain_doctoring.py same_chain_margin diff_chain_margin batch_size output_size learning_rate whichGPU is_finetuning is_overfitting pretrained_net
+# overfitting: python same_chain_doctoring.py .2 .4 120 256 .0001 2 False True None
+# chop off last layer: python same_chain_doctoring.py .2 .4 120 256 .0001 2 True False './models/ilsvrc2012.ckpt'
+# don't chop off last layer: python same_chain_doctoring.py .2 .4 120 256 .0001 2 False False './models/ilsvrc2012.ckpt'
 """
 
 import tensorflow as tf
@@ -23,7 +24,7 @@ import time
 import sys
 import itertools
 
-def main(same_chain_margin,diff_chain_margin,batch_size,output_size,learning_rate,whichGPU,is_finetuning,pretrained_net):
+def main(same_chain_margin,diff_chain_margin,batch_size,output_size,learning_rate,whichGPU,is_finetuning,is_overfitting,pretrained_net):
     def handler(signum, frame):
         print 'Saving checkpoint before closing'
         pretrained_net = os.path.join(ckpt_dir, 'checkpoint-'+param_str)
@@ -62,6 +63,18 @@ def main(same_chain_margin,diff_chain_margin,batch_size,output_size,learning_rat
 
     # Create data "batcher"
     train_data = SameClassSet(train_filename, mean_file, img_size, crop_size, batch_size, num_pos_examples, isTraining=is_training)
+
+    if is_overfitting.lower() == 'true':
+        good_chains = np.random.choice(train_data.chains.keys(),3,replace=False)
+        for chain in train_data.chains.keys():
+            if not chain in good_chains:
+                train_data.chains.pop(chain)
+            else:
+                good_hotels = train_data.chains[chain].keys()[:num_pos_examples]
+                for hotel in train_data.chains[chain].keys():
+                    if not hotel in good_hotels:
+                        train_data.chains[chain].pop(hotel)
+
     datestr = datetime.now().strftime("%Y_%m_%d_%H%M")
     param_str = datestr+'_lr'+str(learning_rate).replace('.','pt')+'_outputSz'+str(output_size)+'_margin'+str(margin).replace('.','pt')
     logfile_path = os.path.join(log_dir,param_str+'_train.txt')
@@ -328,5 +341,6 @@ if __name__ == "__main__":
     learning_rate = args[5]
     whichGPU = args[6]
     is_finetuning = args[7]
-    pretrained_net = args[8]
-    main(same_chain_margin,diff_chain_margin,batch_size,output_size,learning_rate,whichGPU,is_finetuning,pretrained_net)
+    is_overfitting = args[8]
+    pretrained_net = args[9]
+    main(same_chain_margin,diff_chain_margin,batch_size,output_size,learning_rate,whichGPU,is_finetuning,is_overfitting,pretrained_net)
