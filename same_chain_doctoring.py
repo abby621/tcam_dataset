@@ -63,7 +63,7 @@ def main(same_chain_margin,diff_chain_margin,batch_size,output_size,learning_rat
     # Create data "batcher"
     train_data = SameClassSet(train_filename, mean_file, img_size, crop_size, batch_size, num_pos_examples, isTraining=is_training)
     datestr = datetime.now().strftime("%Y_%m_%d_%H%M")
-    param_str = datestr+'_tcam_with_doctoring_lr'+str(learning_rate).replace('.','pt')+'_outputSz'+str(output_size)+'_margin'+str(margin).replace('.','pt')
+    param_str = datestr+'_lr'+str(learning_rate).replace('.','pt')+'_outputSz'+str(output_size)+'_margin'+str(margin).replace('.','pt')
     logfile_path = os.path.join(log_dir,param_str+'_train.txt')
     train_log_file = open(logfile_path,'a')
     print '------------'
@@ -319,7 +319,7 @@ def main(same_chain_margin,diff_chain_margin,batch_size,output_size,learning_rat
 
 if __name__ == "__main__":
     args = sys.argv
-    if len(args) < 8:
+    if len(args) < 10:
         print 'Expected input parameters: same_chain_margin, diff_chain_margin, batch_size,output_size,learning_rate,whichGPU,is_finetuning'
     same_chain_margin = args[1]
     diff_chain_margin = args[2]
