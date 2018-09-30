@@ -16,6 +16,7 @@ from tensorflow.python.ops.image_ops_impl import *
 from tensorflow.python.ops import gen_image_ops
 from tensorflow.python.ops import array_ops
 from tensorflow.python.ops import math_ops
+from tensorflow.python.ops import nn
 import tensorflow.contrib.slim as slim
 from nets import resnet_v2
 import socket

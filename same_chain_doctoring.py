@@ -1,7 +1,8 @@
 """
-# python same_chain_doctoring.py batch_size output_size learning_rate whichGPU is_finetuning pretrained_net
-# chop off last layer: python same_chain_doctoring.py 120 256 .0001 2 True './models/ilsvrc2012.ckpt'
-# don't chop off last layer: python same_chain_doctoring.py 120 256 .0001 2 False './models/ilsvrc2012.ckpt'
+# python same_chain_doctoring.py same_chain_margin diff_chain_margin batch_size output_size learning_rate whichGPU is_finetuning pretrained_net
+# chop off last layer: python same_chain_doctoring.py .2 .4 120 256 .0001 2 True './models/ilsvrc2012.ckpt'
+# don't chop off last layer: python same_chain_doctoring.py .2 .4 120 256 .0001 2 False './models/ilsvrc2012.ckpt'
+"""
 
 import tensorflow as tf
 from classfile import SameClassSet
@@ -22,7 +23,7 @@ import time
 import sys
 import itertools
 
-def main(batch_size,output_size,learning_rate,whichGPU,is_finetuning,pretrained_net):
+def main(same_chain_margin,diff_chain_margin,batch_size,output_size,learning_rate,whichGPU,is_finetuning,pretrained_net):
     def handler(signum, frame):
         print 'Saving checkpoint before closing'
         pretrained_net = os.path.join(ckpt_dir, 'checkpoint-'+param_str)
@@ -46,8 +47,8 @@ def main(batch_size,output_size,learning_rate,whichGPU,is_finetuning,pretrained_
 
     is_training = True
 
-    margin = .5
-    same_chain_margin = .2
+    margin = float(diff_chain_margin)
+    same_chain_margin = float(same_chain_margin)
     batch_size = int(batch_size)
     output_size = int(output_size)
     learning_rate = float(learning_rate)
@@ -223,11 +224,18 @@ def main(batch_size,output_size,learning_rate,whichGPU,is_finetuning,pretrained_
     posIdx10 = num_pos_examples*posIdx
     posImInds = np.tile(posIdx10,(num_pos_examples,1)).transpose()+np.tile(np.arange(0,num_pos_examples),(batch_size,1))
     anchorInds = np.tile(np.arange(0,batch_size),(num_pos_examples,1)).transpose()
-
     posImInds_flat = posImInds.ravel()
     anchorInds_flat = anchorInds.ravel()
-
     posPairInds = zip(posImInds_flat,anchorInds_flat)
+    ra, rb, rc = np.meshgrid(np.arange(0,batch_size),np.arange(0,batch_size),np.arange(0,num_pos_examples))
+    bad_negatives = np.floor((ra)/num_pos_examples) == np.floor((rb)/num_pos_examples)
+    bad_positives = np.mod(rb,num_pos_examples) == np.mod(rc,num_pos_examples)
+    same_class_mask = ((1-bad_negatives)*(1-bad_positives)).astype('float32')
+
+    chain_based_margin = np.zeros(same_class_mask.shape)
+    chain_based_margin[:] = margin
+    chain_based_margin[:batch_size/2,:batch_size/2,:] = same_chain_margin
+
     posDists = tf.reshape(tf.gather_nd(D,posPairInds),(batch_size,num_pos_examples))
 
     shiftPosDists = tf.reshape(posDists,(1,batch_size,num_pos_examples))
@@ -235,15 +243,17 @@ def main(batch_size,output_size,learning_rate,whichGPU,is_finetuning,pretrained_
 
     allDists = tf.tile(tf.expand_dims(D,2),(1,1,num_pos_examples))
 
-    ra, rb, rc = np.meshgrid(np.arange(0,batch_size),np.arange(0,batch_size),np.arange(0,num_pos_examples))
+    all_loss = tf.maximum(0.,tf.multiply(same_class_mask,posDistsRep - allDists + chain_based_margin))
+    non_zero_mask = tf.greater(all_loss, 0)
+    non_zero_array = tf.boolean_mask(all_loss, non_zero_mask)
+    loss = tf.reduce_mean(all_loss)
 
-    bad_negatives = np.floor((ra)/num_pos_examples) == np.floor((rb)/num_pos_examples)
-    bad_positives = np.mod(rb,num_pos_examples) == np.mod(rc,num_pos_examples)
-
-    mask = ((1-bad_negatives)*(1-bad_positives)).astype('float32')
-
-    # loss = tf.reduce_sum(tf.maximum(0.,tf.multiply(mask,margin + posDistsRep - allDists)))/batch_size
-    loss = tf.reduce_mean(tf.maximum(0.,tf.multiply(mask,margin + posDistsRep - allDists)))
+    # slightly counterintuitive to not define "init_op" first, but tf vars aren't known until added to graph
+    update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
+    with tf.control_dependencies(update_ops):
+        # train_op = tf.train.AdamOptimizer(learning_rate).minimize(loss)
+        optimizer = tf.train.AdamOptimizer(learning_rate)
+        train_op = slim.learning.create_train_op(loss, optimizer)
 
     # slightly counterintuitive to not define "init_op" first, but tf vars aren't known until added to graph
     update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
@@ -279,10 +289,10 @@ def main(batch_size,output_size,learning_rate,whichGPU,is_finetuning,pretrained_
         people_masks = train_data.getPeopleMasks()
         batch_time = time.time() - start_time
         start_time = time.time()
-        _, loss_val = sess.run([train_op, loss], feed_dict={image_batch: batch, people_mask_batch: people_masks})
+        _, nza, loss_val = sess.run([train_op,non_zero_array, loss], feed_dict={image_batch: batch})
         end_time = time.time()
         duration = end_time-start_time
-        out_str = 'Step %d: loss = %.6f -- (batch creation: %.3f | training: %.3f sec)' % (step, loss_val,batch_time,duration)
+        out_str = 'Step %d: loss = %.6f | non-zero triplets: %d -- (batch creation: %.3f | training: %.3f sec)' % (step, loss_val, nza.shape[0], batch_time,duration)
         # print(out_str)
         if step % summary_iters == 0:
             print(out_str)
@@ -310,11 +320,13 @@ def main(batch_size,output_size,learning_rate,whichGPU,is_finetuning,pretrained_
 if __name__ == "__main__":
     args = sys.argv
     if len(args) < 8:
-        print 'Expected input parameters: batch_size,output_size,learning_rate,whichGPU,is_finetuning'
-    batch_size = args[1]
-    output_size = args[2]
-    learning_rate = args[3]
-    whichGPU = args[4]
-    is_finetuning = args[5]
-    pretrained_net = args[6]
-    main(batch_size,output_size,learning_rate,whichGPU,is_finetuning,pretrained_net)
+        print 'Expected input parameters: same_chain_margin, diff_chain_margin, batch_size,output_size,learning_rate,whichGPU,is_finetuning'
+    same_chain_margin = args[1]
+    diff_chain_margin = args[2]
+    batch_size = args[3]
+    output_size = args[4]
+    learning_rate = args[5]
+    whichGPU = args[6]
+    is_finetuning = args[7]
+    pretrained_net = args[8]
+    main(same_chain_margin,diff_chain_margin,batch_size,output_size,learning_rate,whichGPU,is_finetuning,pretrained_net)
