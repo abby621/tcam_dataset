@@ -1,8 +1,8 @@
 """
 # python same_chain_doctoring.py same_chain_margin diff_chain_margin batch_size output_size learning_rate whichGPU is_finetuning is_overfitting pretrained_net
-# overfitting: python same_chain_doctoring.py .2 .4 120 256 .0001 2 False True None
-# chop off last layer: python same_chain_doctoring.py .2 .4 120 256 .0001 2 True False './models/ilsvrc2012.ckpt'
-# don't chop off last layer: python same_chain_doctoring.py .2 .4 120 256 .0001 2 False False './models/ilsvrc2012.ckpt'
+# overfitting: python same_chain_doctoring.py .2 .4 120 256 .0001 1 False True None
+# chop off last layer: python same_chain_doctoring.py .2 .4 120 256 .0001 1 True False './models/ilsvrc2012.ckpt'
+# don't chop off last layer: python same_chain_doctoring.py .2 .4 120 256 .0001 1 False False './models/ilsvrc2012.ckpt'
 """
 
 import tensorflow as tf
@@ -298,7 +298,7 @@ def main(same_chain_margin,diff_chain_margin,batch_size,output_size,learning_rat
     ctr  = 0
     for step in range(num_iters):
         start_time = time.time()
-        batch, labels, ims = train_data.getBatch()
+        batch, labels, chains, ims = train_data.getBatch()
         people_masks = train_data.getPeopleMasks()
         batch_time = time.time() - start_time
         start_time = time.time()
