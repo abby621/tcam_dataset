@@ -1,9 +1,9 @@
 """
+# ilsvrc: python evaluate/eval_resnet_feats_retrieval.py 0 ./models/ilsvrc2012.ckpt
 # expedia: python evaluate/eval_resnet_feats_retrieval.py 0 ./output/expedia/ckpts/checkpoint-2018_09_19_1314_lr0pt0001_outputSz256_margin0pt3-74157
 # no doctoring: python evaluate/eval_resnet_feats_retrieval.py 0 ./output/no_doctoring/ckpts/checkpoint-2018_09_19_0913_lr0pt0001_outputSz256_margin0pt3-75721
-# doctoring: python evaluate/eval_resnet_feats_retrieval.py 1 ./output/doctoring/ckpts/checkpoint-2018_08_28_2136_tcam_with_doctoring_lr0pt0001_outputSz256_margin0pt3-70841
-# ilsvrc: python evaluate/eval_resnet_feats_retrieval.py 3 ./models/ilsvrc2012.ckpt
-# chain: python evaluate/eval_resnet_feats_retrieval.py 3 ./output/sameChain/no_doctoring/ckpts/checkpoint-2018_09_30_0809_lr1e-05_outputSz256_margin0pt4-29999
+# doctoring: python evaluate/eval_resnet_feats_retrieval.py 0 ./output/doctoring/ckpts/checkpoint-2018_08_28_2136_tcam_with_doctoring_lr0pt0001_outputSz256_margin0pt3-70841
+# chain: python evaluate/eval_resnet_feats_retrieval.py 0 ./output/sameChain/no_doctoring/ckpts/checkpoint-2018_09_30_0809_lr1e-05_outputSz256_margin0pt4-29999
 """
 
 import numpy as np
@@ -111,7 +111,7 @@ def main(pretrained_net,whichGPU):
                 if len(correctResults) > 0 and correctResults[0] < 100:
                     topResult = correctResults[0]
                     top_k_chain[aa+idx,topResult:] = 1
-        average_chain_accuracy = np.mean(top_k,axis=0)
+        average_chain_accuracy = np.mean(top_k_chain,axis=0)
         save_h5('average_chain_retrieval_accuracy',average_accuracy,'f',os.path.join(test_output_dir,'average_chain_retrieval_accuracy.h5'))
         print iterStr, test_name, average_accuracy[0], average_accuracy[2], average_accuracy[4], average_accuracy[9]
 
