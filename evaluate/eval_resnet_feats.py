@@ -1,9 +1,9 @@
 """
 # expedia: python evaluate/eval_resnet_feats.py 0 ./output/expedia/ckpts/checkpoint-2018_09_19_1314_lr0pt0001_outputSz256_margin0pt3-74157
 # no doctoring: python evaluate/eval_resnet_feats.py 0 ./output/no_doctoring/ckpts/checkpoint-2018_09_19_0913_lr0pt0001_outputSz256_margin0pt3-75721
-# doctoring: python evaluate/eval_resnet_feats.py 2 ./output/doctoring/ckpts/checkpoint-2018_08_28_2136_tcam_with_doctoring_lr0pt0001_outputSz256_margin0pt3-70841
+# doctoring: python evaluate/eval_resnet_feats.py 1 ./output/doctoring/ckpts/checkpoint-2018_08_28_2136_tcam_with_doctoring_lr0pt0001_outputSz256_margin0pt3-70841
 # ilsvrc: python evaluate/eval_resnet_feats.py 3 ./models/ilsvrc2012.ckpt
-# chain: python evaluate/eval_resnet_feats.py 3 ./output/sameChain/no_doctoring/ckpts/checkpoint-2018_09_28_1402_lr0pt0001_outputSz256_margin0pt4-760
+# chain: python evaluate/eval_resnet_feats.py 3 ./output/sameChain/no_doctoring/ckpts/checkpoint-2018_09_30_0809_lr1e-05_outputSz256_margin0pt4-29999
 """
 
 import numpy as np

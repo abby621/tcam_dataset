@@ -115,8 +115,8 @@ def main(pretrained_net,whichGPU):
                         if result < 100:
                             top_k_chain[aa+idx,result:] += 1
         average_chain_accuracy = np.mean(top_k_chain,axis=0)
-        save_h5('average_chain_retrieval_counts',average_accuracy,'f',os.path.join(test_output_dir,'average_chain_retrieval_counts.h5'))
-        print iterStr, test_name, average_accuracy[0], average_accuracy[2], average_accuracy[4], average_accuracy[9]
+        save_h5('average_chain_retrieval_counts',average_chain_accuracy,'f',os.path.join(test_output_dir,'average_chain_retrieval_counts.h5'))
+        print iterStr, test_name, average_chain_accuracy[0], average_chain_accuracy[2], average_chain_accuracy[4], average_chain_accuracy[9]
 
 if __name__ == "__main__":
     args = sys.argv
