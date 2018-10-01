@@ -261,7 +261,7 @@ class NonTripletSet:
         return img
 
 class SameClassSet(CombinatorialTripletSet):
-    def __init__(self, image_list, mean_file, image_size, crop_size, batchSize=100, num_pos=10, isTraining=True, isOverfitting=False):
+    def __init__(self, image_list, mean_file, image_size, crop_size, batchSize=100, num_pos=10,isTraining=True, isOverfitting=False,fractionSameChain=0.5):
         self.image_size = image_size
         self.crop_size = crop_size
         self.isTraining = isTraining
@@ -281,6 +281,8 @@ class SameClassSet(CombinatorialTripletSet):
 
         self.numPos = num_pos
         self.batchSize = batchSize
+
+        self.fractionSameChain = fractionSameChain
 
         # this is SUPER hacky -- if the test file is 'occluded' then the class is in the 5th position, not the 4th
         if 'occluded' in image_list:
@@ -317,18 +319,19 @@ class SameClassSet(CombinatorialTripletSet):
         numClasses = self.batchSize/self.numPos
         chain = np.random.choice(self.chains.keys())
 
-        # half of the classes in the batch should be from the same chain -- this is a version of hard mining,
-        # making it so half of the negative examples we see are "harder" because they come from the same chain
         classes = np.zeros(numClasses,dtype='int')
         chains = np.zeros(numClasses,dtype='int')
-        while len(self.chains[chain].keys()) < numClasses/2:
+
+        # the first fraction of the classes in the batch should be from the same chain -- this is a version of hard mining,
+        # making it so half of the negative examples we see are "harder" because they come from the same chain
+        while len(self.chains[chain].keys()) < int(float(numClasses)*fractionSameChain):
             chain = np.random.choice(self.chains.keys())
 
-        classes[:numClasses/2] = np.random.choice(self.chains[chain].keys(),numClasses/2,replace=False)
-        chains[:numClasses/2] = chain
+        classes[:int(float(numClasses)*fractionSameChain)] = np.random.choice(self.chains[chain].keys(),int(float(numClasses)*fractionSameChain),replace=False)
+        chains[:int(float(numClasses)*fractionSameChain)] = chain
 
-        # the other half of the classes should be from random hotels
-        for iy in range(numClasses/2,numClasses):
+        # the other fraction of the classes should be from random hotels
+        for iy in range(int(float(numClasses)*fractionSameChain),numClasses):
             chain2 = np.random.choice(self.chains.keys())
             numHotelsAvailable = np.sum(np.array([1 for h in self.chains[chain2].keys() if h not in classes]))
             while chain2 == chain or numHotelsAvailable < 1:
