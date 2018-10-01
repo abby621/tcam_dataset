@@ -327,7 +327,7 @@ class SameClassSet(CombinatorialTripletSet):
         while len(self.chains[chain].keys()) < int(float(numClasses)*self.fractionSameChain):
             chain = np.random.choice(self.chains.keys())
 
-        classes[:int(float(numClasses)*self.fractionSameChain)] = np.random.choice(self.chains[chain].keys(),int(float(numClasses)*fractionSameChain),replace=False)
+        classes[:int(float(numClasses)*self.fractionSameChain)] = np.random.choice(self.chains[chain].keys(),int(float(numClasses)*self.fractionSameChain),replace=False)
         chains[:int(float(numClasses)*self.fractionSameChain)] = chain
 
         # the other fraction of the classes should be from random hotels
