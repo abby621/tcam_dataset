@@ -60,7 +60,7 @@ def main(pretrained_net,whichGPU):
             for idx in range(ff.shape[0]):
                 correctResults = np.where(result_classes[idx]==test_classes[aa+idx])[0]
                 if len(correctResults) > 0:
-                    for result in correctResult:
+                    for result in correctResults:
                         if result < 100:
                             top_k[aa+idx,result:] += 1
         average_accuracy = np.mean(top_k,axis=0)
@@ -111,7 +111,7 @@ def main(pretrained_net,whichGPU):
             for idx in range(ff.shape[0]):
                 correctResults = np.where(result_chains[idx]==test_class_to_chain[aa+idx])[0]
                 if len(correctResults) > 0:
-                    for result in correctResult:
+                    for result in correctResults:
                         if result < 100:
                             top_k_chain[aa+idx,result:] += 1
         average_chain_accuracy = np.mean(top_k_chain,axis=0)
