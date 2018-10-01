@@ -1,9 +1,9 @@
 """
-# python same_chain_doctoring.py all_same_chain same_chain_margin diff_chain_margin batch_size output_size learning_rate whichGPU is_finetuning is_overfitting pretrained_net
-# overfitting: python same_chain_doctoring.py False .2 .4 120 256 .0001 1 False True None
-# chop off last layer: python same_chain_doctoring.py False .2 .4 120 256 .0001 1 True False './models/ilsvrc2012.ckpt'
-# don't chop off last layer: python same_chain_doctoring.py False .2 .4 120 256 .0001 1 False False './models/ilsvrc2012.ckpt'
-# don't chop off last layer + all same chain: python same_chain_doctoring.py False .2 .4 120 256 .0001 1 False False './models/ilsvrc2012.ckpt'
+# python same_chain_doctoring.py fraction_same_chain same_chain_margin diff_chain_margin batch_size output_size learning_rate whichGPU is_finetuning is_overfitting pretrained_net
+# overfitting: python same_chain_doctoring.py .5 .2 .4 120 256 .0001 1 False True None
+# chop off last layer: python same_chain_doctoring.py .5 .2 .4 120 256 .0001 1 True False './models/ilsvrc2012.ckpt'
+# don't chop off last layer: python same_chain_doctoring.py .5 .2 .4 120 256 .0001 1 False False './models/ilsvrc2012.ckpt'
+# don't chop off last layer + more of the same chain: python same_chain_doctoring.py .75 .2 .4 120 256 .0001 1 False False './models/ilsvrc2012.ckpt'
 """
 
 import tensorflow as tf
@@ -25,7 +25,7 @@ import time
 import sys
 import itertools
 
-def main(all_same_chain,same_chain_margin,diff_chain_margin,batch_size,output_size,learning_rate,whichGPU,is_finetuning,is_overfitting,pretrained_net):
+def main(fraction_same_chain,same_chain_margin,diff_chain_margin,batch_size,output_size,learning_rate,whichGPU,is_finetuning,is_overfitting,pretrained_net):
     def handler(signum, frame):
         print 'Saving checkpoint before closing'
         pretrained_net = os.path.join(ckpt_dir, 'checkpoint-'+param_str)
@@ -54,6 +54,7 @@ def main(all_same_chain,same_chain_margin,diff_chain_margin,batch_size,output_si
     batch_size = int(batch_size)
     output_size = int(output_size)
     learning_rate = float(learning_rate)
+    fraction_same_chain = float(fraction_same_chain)
     whichGPU = str(whichGPU)
 
     if batch_size%10 != 0:
@@ -63,12 +64,7 @@ def main(all_same_chain,same_chain_margin,diff_chain_margin,batch_size,output_si
     num_pos_examples = batch_size/10
 
     # Create data "batcher"
-    if all_same_chain.lower() == 'true':
-        all_same_chain = True
-    else:
-        all_same_chain = False
-
-    train_data = SameClassSet(train_filename, mean_file, img_size, crop_size, batch_size, num_pos_examples, isTraining=is_training,allSameChain=all_same_chain)
+    train_data = SameClassSet(train_filename, mean_file, img_size, crop_size, batch_size, num_pos_examples, isTraining=is_training,fractionSameChain=fraction_same_chain)
 
     if is_overfitting.lower() == 'true':
         good_chains = np.random.choice(train_data.chains.keys(),3,replace=False)
@@ -82,7 +78,7 @@ def main(all_same_chain,same_chain_margin,diff_chain_margin,batch_size,output_si
                         train_data.chains[chain].pop(hotel)
 
     datestr = datetime.now().strftime("%Y_%m_%d_%H%M")
-    param_str = datestr+'_lr'+str(learning_rate).replace('.','pt')+'_outputSz'+str(output_size)+'_margin'+str(margin).replace('.','pt')
+    param_str = datestr+'_fracSameChain'+str(fraction_same_chain).replace('.','pt')+'_lr'+str(learning_rate).replace('.','pt')+'_outputSz'+str(output_size)+'_margin'+str(margin).replace('.','pt')
     logfile_path = os.path.join(log_dir,param_str+'_train.txt')
     train_log_file = open(logfile_path,'a')
     print '------------'
@@ -252,11 +248,8 @@ def main(all_same_chain,same_chain_margin,diff_chain_margin,batch_size,output_si
     same_class_mask = ((1-bad_negatives)*(1-bad_positives)).astype('float32')
 
     chain_based_margin = np.zeros(same_class_mask.shape)
-    if all_same_chain:
-        chain_based_margin[:] = same_chain_margin
-    else:
-        chain_based_margin[:] = margin
-        chain_based_margin[:batch_size/2,:batch_size/2,:] = same_chain_margin
+    chain_based_margin[:] = margin
+    chain_based_margin[:int(float(batch_size)*fraction_same_chain),:int(float(batch_size)*fraction_same_chain),:] = same_chain_margin
 
     posDists = tf.reshape(tf.gather_nd(D,posPairInds),(batch_size,num_pos_examples))
 
@@ -342,8 +335,8 @@ def main(all_same_chain,same_chain_margin,diff_chain_margin,batch_size,output_si
 if __name__ == "__main__":
     args = sys.argv
     if len(args) < 11:
-        print 'Expected input parameters: all_same_chain, same_chain_margin, diff_chain_margin, batch_size,output_size,learning_rate,whichGPU,is_finetuning'
-    all_same_chain = args[1]
+        print 'Expected input parameters: fraction_same_chain, same_chain_margin, diff_chain_margin, batch_size,output_size,learning_rate,whichGPU,is_finetuning'
+    fraction_same_chain = args[1]
     same_chain_margin = args[2]
     diff_chain_margin = args[3]
     batch_size = args[4]
@@ -353,4 +346,4 @@ if __name__ == "__main__":
     is_finetuning = args[8]
     is_overfitting = args[9]
     pretrained_net = args[10]
-    main(all_same_chain,same_chain_margin,diff_chain_margin,batch_size,output_size,learning_rate,whichGPU,is_finetuning,is_overfitting,pretrained_net)
+    main(fraction_same_chain,same_chain_margin,diff_chain_margin,batch_size,output_size,learning_rate,whichGPU,is_finetuning,is_overfitting,pretrained_net)
