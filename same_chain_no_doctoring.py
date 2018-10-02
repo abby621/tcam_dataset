@@ -53,7 +53,7 @@ def main(fraction_same_chain,same_chain_margin,diff_chain_margin,batch_size,outp
     img_size = [256, 256]
     crop_size = [224, 224]
     num_iters = 200000
-    summary_iters = 1
+    summary_iters = 25
     save_iters = 5000
     featLayer = 'resnet_v2_50/logits'
 
