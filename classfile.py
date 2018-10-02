@@ -310,7 +310,7 @@ class SameChainSet(CombinatorialTripletSet):
             for t in temp:
                 if t not in self.chains[chain][hotel]['ims']:
                     self.chains[chain][hotel]['ims'].append(t)
-            if len(self.chains[chain][hotel]['ims']) < numPos:
+            if len(self.chains[chain][hotel]['ims']) < self.numPos:
                 self.chains[chain].pop(hotel)
             else:
                 self.chains[chain][hotel]['sources'] = np.array([im.split('/')[clsPos+1] for im in self.chains[chain][hotel]['ims']])
