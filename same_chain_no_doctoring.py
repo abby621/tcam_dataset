@@ -25,6 +25,7 @@ import signal
 import time
 import sys
 import itertools
+import json
 
 def main(fraction_same_chain,same_chain_margin,diff_chain_margin,batch_size,output_size,learning_rate,whichGPU,is_finetuning,is_overfitting,pretrained_net):
     def handler(signum, frame):
