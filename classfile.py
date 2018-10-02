@@ -305,7 +305,7 @@ class SameChainSet(CombinatorialTripletSet):
                     chain = -1
                 if not chain in self.chains.keys():
                      self.chains[chain] = {}
-                if not hotel in self.chains[hotel].keys():
+                if not hotel in self.chains[chain].keys():
                     self.chains[chain][hotel] = {}
                     self.chains[chain][hotel]['ims'] = [t]
                 else:
