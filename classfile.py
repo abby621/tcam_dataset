@@ -297,25 +297,23 @@ class SameChainSet(CombinatorialTripletSet):
         f = open(image_list, 'r')
         for line in f:
             temp = line.strip('\n').split(' ')
+            hotel = int(temp[0].split('/')[clsPos])
+            if hotel in class_to_chain_mapping.keys():
+                chain = class_to_chain_mapping[hotel]
+            else:
+                chain = -1
+            if not chain in self.chains.keys():
+                 self.chains[chain] = {}
+            if not hotel in self.chains[chain].keys():
+                self.chains[chain][hotel] = {}
+                self.chains[chain][hotel]['ims'] = []
             for t in temp:
-                hotel = int(t.split('/')[clsPos])
-                if hotel in class_to_chain_mapping.keys():
-                    chain = class_to_chain_mapping[hotel]
-                else:
-                    chain = -1
-                if not chain in self.chains.keys():
-                     self.chains[chain] = {}
-                if not hotel in self.chains[chain].keys():
-                    self.chains[chain][hotel] = {}
-                    self.chains[chain][hotel]['ims'] = [t]
-                else:
-                    if t not in self.chains[chain][hotel]['ims']:
-                        self.chains[chain][hotel]['ims'].append(t)
-            for hotel in self.chains[chain].keys():
-                if len(self.chains[chain][hotel]['ims']) < self.numPos:
-                    self.chains[chain].pop(hotel)
-                else:
-                    self.chains[chain][hotel]['sources'] = np.array([im.split('/')[clsPos+1] for im in self.chains[chain][hotel]['ims']])
+                if t not in self.chains[chain][hotel]['ims']:
+                    self.chains[chain][hotel]['ims'].append(t)
+            if len(self.chains[chain][hotel]['ims']) < numPos:
+                self.chains[chain].pop(hotel)
+            else:
+                self.chains[chain][hotel]['sources'] = np.array([im.split('/')[clsPos+1] for im in self.chains[chain][hotel]['ims']])
 
         self.people_crop_files = glob.glob(os.path.join(peopleDir,'*.png'))
 
