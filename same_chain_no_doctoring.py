@@ -48,10 +48,6 @@ def main(fraction_same_chain,same_chain_margin,diff_chain_margin,batch_size,outp
         if jsonTrainData[hotel]['chainId'] != -1:
             cls_to_chain[int(hotel)] = jsonTrainData[hotel]['chainId']
 
-    for hotel in jsonTestData.keys():
-        if jsonTestData[hotel]['chainId'] != -1 and int(hotel) not in cls_to_chain.keys():
-            cls_to_chain[int(hotel)] = jsonTestData[hotel]['chainId']
-
     mean_file = './input/meanIm.npy'
 
     img_size = [256, 256]
