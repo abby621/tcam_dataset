@@ -260,8 +260,8 @@ class NonTripletSet:
 
         return img
 
-class SameClassSet(CombinatorialTripletSet):
-    def __init__(self, image_list, mean_file, image_size, crop_size, batchSize=100, num_pos=10,isTraining=True, isOverfitting=False,fractionSameChain=0.5):
+class SameChainSet(CombinatorialTripletSet):
+    def __init__(self, image_list, class_to_chain_mapping, mean_file, image_size, crop_size, batchSize=100, num_pos=10,isTraining=True, isOverfitting=False,fractionSameChain=0.5,randomizeChainFraction=False):
         self.image_size = image_size
         self.crop_size = crop_size
         self.isTraining = isTraining
@@ -283,6 +283,7 @@ class SameClassSet(CombinatorialTripletSet):
         self.batchSize = batchSize
 
         self.fractionSameChain = fractionSameChain
+        self.randomizeChainFraction = randomizeChainFraction
 
         # this is SUPER hacky -- if the test file is 'occluded' then the class is in the 5th position, not the 4th
         if 'occluded' in image_list:
@@ -294,24 +295,27 @@ class SameClassSet(CombinatorialTripletSet):
         # Reads a .txt file containing image paths of image sets where each line contains
         # all images from the same set and the first image is the anchor
         f = open(image_list, 'r')
-        ctr = 0
         for line in f:
             temp = line.strip('\n').split(' ')
-            self.chains[ctr] = {}
             for t in temp:
                 hotel = int(t.split('/')[clsPos])
+                if hotel in class_to_chain_mapping.keys():
+                    chain = class_to_chain_mapping[hotel]
+                else:
+                    chain = -1
+                if not chain in self.chains.keys():
+                     self.chains[chain] = {}
                 if not hotel in self.chains[ctr].keys():
-                    self.chains[ctr][hotel] = {}
-                    self.chains[ctr][hotel]['ims'] = [t]
+                    self.chains[chain][hotel] = {}
+                    self.chains[chain][hotel]['ims'] = [t]
                 else:
-                    if t not in self.chains[ctr][hotel]['ims']:
-                        self.chains[ctr][hotel]['ims'].append(t)
-            for hotel in self.chains[ctr].keys():
-                if len(self.chains[ctr][hotel]['ims']) < self.numPos:
-                    self.chains[ctr].pop(hotel)
+                    if t not in self.chains[chain][hotel]['ims']:
+                        self.chains[chain][hotel]['ims'].append(t)
+            for hotel in self.chains[chain].keys():
+                if len(self.chains[chain][hotel]['ims']) < self.numPos:
+                    self.chains[chain].pop(hotel)
                 else:
-                    self.chains[ctr][hotel]['sources'] = np.array([im.split('/')[clsPos+1] for im in self.chains[ctr][hotel]['ims']])
-            ctr += 1
+                    self.chains[chain][hotel]['sources'] = np.array([im.split('/')[clsPos+1] for im in self.chains[chain][hotel]['ims']])
 
         self.people_crop_files = glob.glob(os.path.join(peopleDir,'*.png'))
 

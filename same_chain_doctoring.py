@@ -3,11 +3,11 @@
 # overfitting: python same_chain_doctoring.py .5 .2 .4 120 256 .0001 1 False True None
 # chop off last layer: python same_chain_doctoring.py .5 .2 .4 120 256 .0001 1 True False './models/ilsvrc2012.ckpt'
 # don't chop off last layer: python same_chain_doctoring.py .5 .2 .4 120 256 .0001 1 False False './models/ilsvrc2012.ckpt'
-# don't chop off last layer + more of the same chain: python same_chain_doctoring.py .75 .2 .4 120 256 .0001 1 False False './models/ilsvrc2012.ckpt'
+# don't chop off last layer + more of the same chain: python same_chain_doctoring.py .75 .3 .5 120 256 .0001 1 False False './output/sameChain/no_doctoring/ckpts/checkpoint-2018_09_30_0809_lr1e-05_outputSz256_margin0pt4-38614'
 """
 
 import tensorflow as tf
-from classfile import SameClassSet
+from classfile import SameChainSet
 import os.path
 import time
 from datetime import datetime
@@ -37,7 +37,17 @@ def main(fraction_same_chain,same_chain_margin,diff_chain_margin,batch_size,outp
 
     ckpt_dir = './output/sameChain/doctoring/ckpts'
     log_dir = './output/sameChain/doctoring/logs'
-    train_filename = './input/train_by_chain.txt'
+    train_filename = './input/train_by_hotel.txt'
+    jsonTrainData = json.load(open('./input/train_set.json'))
+    cls_to_chain = {}
+    for hotel in jsonTrainData.keys():
+        if jsonTrainData[hotel]['chainId'] != -1:
+            cls_to_chain[int(hotel)] = jsonTrainData[hotel]['chainId']
+
+    for hotel in jsonTestData.keys():
+        if jsonTestData[hotel]['chainId'] != -1 and int(hotel) not in cls_to_chain.keys():
+            cls_to_chain[int(hotel)] = jsonTestData[hotel]['chainId']
+
     mean_file = './input/meanIm.npy'
 
     img_size = [256, 256]
@@ -64,7 +74,7 @@ def main(fraction_same_chain,same_chain_margin,diff_chain_margin,batch_size,outp
     num_pos_examples = batch_size/10
 
     # Create data "batcher"
-    train_data = SameClassSet(train_filename, mean_file, img_size, crop_size, batch_size, num_pos_examples, isTraining=is_training,fractionSameChain=fraction_same_chain)
+    train_data = SameChainSet(train_filename, cls_to_chain, mean_file, img_size, crop_size, batch_size, num_pos_examples, isTraining=is_training,fractionSameChain=fraction_same_chain)
 
     if is_overfitting.lower() == 'true':
         good_chains = np.random.choice(train_data.chains.keys(),3,replace=False)
@@ -262,13 +272,6 @@ def main(fraction_same_chain,same_chain_margin,diff_chain_margin,batch_size,outp
     non_zero_mask = tf.greater(all_loss, 0)
     non_zero_array = tf.boolean_mask(all_loss, non_zero_mask)
     loss = tf.reduce_mean(all_loss)
-
-    # slightly counterintuitive to not define "init_op" first, but tf vars aren't known until added to graph
-    update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
-    with tf.control_dependencies(update_ops):
-        # train_op = tf.train.AdamOptimizer(learning_rate).minimize(loss)
-        optimizer = tf.train.AdamOptimizer(learning_rate)
-        train_op = slim.learning.create_train_op(loss, optimizer)
 
     # slightly counterintuitive to not define "init_op" first, but tf vars aren't known until added to graph
     update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)

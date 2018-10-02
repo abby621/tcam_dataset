@@ -7,7 +7,7 @@
 """
 
 import tensorflow as tf
-from classfile import SameClassSet
+from classfile import SameChainSet
 import os.path
 import time
 from datetime import datetime
@@ -38,7 +38,19 @@ def main(fraction_same_chain,same_chain_margin,diff_chain_margin,batch_size,outp
 
     ckpt_dir = './output/sameChain/no_doctoring/ckpts'
     log_dir = './output/sameChain/no_doctoring/logs'
-    train_filename = './input/train_by_chain.txt'
+    train_filename = './input/train_by_hotel.txt'
+
+    jsonTrainData = json.load(open('./input/train_set.json'))
+
+    cls_to_chain = {}
+    for hotel in jsonTrainData.keys():
+        if jsonTrainData[hotel]['chainId'] != -1:
+            cls_to_chain[int(hotel)] = jsonTrainData[hotel]['chainId']
+
+    for hotel in jsonTestData.keys():
+        if jsonTestData[hotel]['chainId'] != -1 and int(hotel) not in cls_to_chain.keys():
+            cls_to_chain[int(hotel)] = jsonTestData[hotel]['chainId']
+
     mean_file = './input/meanIm.npy'
 
     img_size = [256, 256]
@@ -65,7 +77,7 @@ def main(fraction_same_chain,same_chain_margin,diff_chain_margin,batch_size,outp
     num_pos_examples = batch_size/10
 
     # Create data "batcher"
-    train_data = SameClassSet(train_filename, mean_file, img_size, crop_size, batch_size, num_pos_examples, isTraining=is_training,fractionSameChain=fraction_same_chain)
+    train_data = SameChainSet(train_filename, cls_to_chain, mean_file, img_size, crop_size, batch_size, num_pos_examples, isTraining=is_training,fractionSameChain=fraction_same_chain)
 
     if is_overfitting.lower() == 'true':
         good_chains = np.random.choice(train_data.chains.keys(),3,replace=False)
