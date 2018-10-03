@@ -1,6 +1,6 @@
 """
 # python same_chain_no_doctoring.py fraction_same_chain same_chain_margin diff_chain_margin batch_size output_size learning_rate whichGPU is_finetuning is_overfitting pretrained_net
-# overfitting: python same_chain_no_doctoring_npairs.py .5 .2 .4 120 256 .0001 1 False True './models/ilsvrc2012.ckpt'
+# overfitting: python same_chain_no_doctoring_npairs.py .5 .2 .4 30 256 .0001 1 True True './models/ilsvrc2012.ckpt'
 # chop off last layer: python same_chain_no_doctoring_npairs.py .5 .2 .4 120 256 .0001 2 True False './models/ilsvrc2012.ckpt'
 # don't chop off last layer: python same_chain_no_doctoring_npairs.py .5 .2 .4 120 256 .0001 2 False False './models/ilsvrc2012.ckpt'
 # don't chop off last layer + switch to more of the same chain: python same_chain_no_doctoring_npairs.py .75 .3 .4 120 256 .0001 2 False False './output/sameChain/no_doctoring/ckpts/checkpoint-2018_09_30_0809_lr1e-05_outputSz256_margin0pt4-38614'
@@ -72,8 +72,6 @@ def main(fraction_same_chain,same_chain_margin,diff_chain_margin,batch_size,outp
         print 'Batch size must be divisible by 10!'
         sys.exit(0)
 
-    num_pos_examples = batch_size/10
-
     # Create data "batcher"
     train_data = SameChainNpairs(train_filename, cls_to_chain, mean_file, img_size, crop_size, batch_size, isTraining=is_training,fractionSameChain=fraction_same_chain)
 
@@ -83,7 +81,7 @@ def main(fraction_same_chain,same_chain_margin,diff_chain_margin,batch_size,outp
             if not chain in good_chains:
                 train_data.chains.pop(chain)
             else:
-                good_hotels = train_data.chains[chain].keys()[:num_pos_examples]
+                good_hotels = train_data.chains[chain].keys()[:np.minimum(10,len(train_data.chains[chain].keys()))]
                 for hotel in train_data.chains[chain].keys():
                     if not hotel in good_hotels:
                         train_data.chains[chain].pop(hotel)
@@ -169,10 +167,10 @@ def main(fraction_same_chain,same_chain_margin,diff_chain_margin,batch_size,outp
         batch, hotels, chains, ims = train_data.getBatch()
         batch_time = time.time() - start_time
         start_time = time.time()
-        _, nza, loss_val = sess.run([train_op,non_zero_array, loss], feed_dict={image_batch: batch,label_batch:hotels})
+        _, loss_val = sess.run([train_op, loss], feed_dict={image_batch: batch,label_batch:hotels})
         end_time = time.time()
         duration = end_time-start_time
-        out_str = 'Step %d: loss = %.6f | non-zero triplets: %d -- (batch creation: %.3f | training: %.3f sec)' % (step, loss_val, nza.shape[0], batch_time,duration)
+        out_str = 'Step %d: loss = %.6f (batch creation: %.3f | training: %.3f sec)' % (step, loss_val, batch_time,duration)
         # print(out_str)
         if step % summary_iters == 0:
             print(out_str)
