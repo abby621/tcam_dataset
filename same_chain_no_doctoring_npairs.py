@@ -74,12 +74,14 @@ def main(fraction_same_chain,batch_size,output_size,learning_rate,whichGPU,is_fi
     train_data = SameChainNpairs(train_filename, cls_to_chain, mean_file, img_size, crop_size, batch_size, isTraining=is_training,fractionSameChain=fraction_same_chain)
 
     if is_overfitting.lower() == 'true':
-        good_chains = np.random.choice(train_data.chains.keys(),3,replace=False)
+        min_count = int(float(batch_size)*fraction_same_chain)
+        good_chains1 = [c for c in train_data.chains.keys() if len(train_data.chains[c].keys()) > min_count]
+        good_chains = np.random.choice(good_chains1,3,replace=False)
         for chain in train_data.chains.keys():
             if not chain in good_chains:
                 train_data.chains.pop(chain)
             else:
-                good_hotels = train_data.chains[chain].keys()[:np.minimum(10,len(train_data.chains[chain].keys()))]
+                good_hotels = train_data.chains[chain].keys()[:min_count]
                 for hotel in train_data.chains[chain].keys():
                     if not hotel in good_hotels:
                         train_data.chains[chain].pop(hotel)
