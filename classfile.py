@@ -487,7 +487,7 @@ class SameChainNpairs(SameChainSet):
             if len(tcamInds) >= 1 and len(exInds) >= 1:
                 numTcam = 1
                 numEx = 1
-            elif len(tcamInds) > 1 and len(exInds) < 1:
+            elif len(tcamInds) < 1 and len(exInds) > 1:
                 numEx = 2
                 numTcam = 0
             else:
