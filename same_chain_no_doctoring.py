@@ -152,9 +152,10 @@ def main(fraction_same_chain,same_chain_margin,diff_chain_margin,batch_size,outp
     allDists = tf.tile(tf.expand_dims(D,2),(1,1,num_pos_examples))
 
     all_loss = tf.maximum(0.,tf.multiply(same_class_mask,posDistsRep - allDists + chain_based_margin))
+    print all_loss.shape
     non_zero_mask = tf.greater(all_loss, 0)
     non_zero_array = tf.boolean_mask(all_loss, non_zero_mask)
-    loss = tf.reduce_mean(all_loss)
+    loss = tf.reduce_sum(all_loss)/(all_loss.shape[0]*all_loss.shape[1])
 
     # slightly counterintuitive to not define "init_op" first, but tf vars aren't known until added to graph
     update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
