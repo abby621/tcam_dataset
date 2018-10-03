@@ -137,7 +137,7 @@ def main(fraction_same_chain,batch_size,output_size,learning_rate,whichGPU,is_fi
 
     labels = tf.gather(label_batch,anchor_inds)
 
-    all_feats = layers[featLayer]
+    all_feats = tf.squeeze(layers[featLayer])
     anchor_feats = tf.gather(all_feats,anchor_inds)
     pos_feats = tf.gather(all_feats,pos_inds)
 
