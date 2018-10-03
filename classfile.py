@@ -421,26 +421,31 @@ class SameChainNpairs(SameChainSet):
         self.chains = {}
         # Reads a .txt file containing image paths of image sets where each line contains
         # all images from the same set and the first image is the anchor
+        hotel_to_ctr = {}
+        ctr = 0
         f = open(image_list, 'r')
         for line in f:
             temp = line.strip('\n').split(' ')
             hotel = int(temp[0].split('/')[clsPos])
+            if not hotel in hotel_to_ctr.keys():
+                hotel_to_ctr[hotel] = ctr
+                ctr += 1
             if hotel in class_to_chain_mapping.keys():
-                chain = class_to_chain_mapping[hotel]
+                chain = class_to_chain_mapping[hotel_to_ctr[hotel]]
             else:
                 chain = -1
             if not chain in self.chains.keys():
                  self.chains[chain] = {}
             if not hotel in self.chains[chain].keys():
-                self.chains[chain][hotel] = {}
-                self.chains[chain][hotel]['ims'] = []
+                self.chains[chain][hotel_to_ctr[hotel]] = {}
+                self.chains[chain][hotel_to_ctr[hotel]]['ims'] = []
             for t in temp:
-                if t not in self.chains[chain][hotel]['ims']:
-                    self.chains[chain][hotel]['ims'].append(t)
-            if len(self.chains[chain][hotel]['ims']) < 2:
-                self.chains[chain].pop(hotel)
+                if t not in self.chains[chain][hotel_to_ctr[hotel]]['ims']:
+                    self.chains[chain][hotel_to_ctr[hotel]]['ims'].append(t)
+            if len(self.chains[chain][hotel_to_ctr[hotel]]['ims']) < 2:
+                self.chains[chain].pop(hotel_to_ctr[hotel])
             else:
-                self.chains[chain][hotel]['sources'] = np.array([im.split('/')[clsPos+1] for im in self.chains[chain][hotel]['ims']])
+                self.chains[chain][hotel_to_ctr[hotel]]['sources'] = np.array([im.split('/')[clsPos+1] for im in self.chains[chain][hotel_to_ctr[hotel]]['ims']])
 
         min_count = int(float(self.batchSize)*self.fractionSameChain)
         for chain in self.chains.keys():
