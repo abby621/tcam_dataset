@@ -88,7 +88,7 @@ def main(fraction_same_chain,batch_size,output_size,learning_rate,whichGPU,is_fi
 
     numChains = len(train_data.chains.keys())
     numHotels = np.sum([len(train_data.chains[c].keys()) for c in train_data.chains.keys()])
-    numIms = np.sum([len(train_data.chains[c][h]['ims']) for h in train_data.chains[c].keys() for c in train_data.chains.keys()])
+    numIms = np.sum([len(train_data.chains[c][h]['ims']) for c in train_data.chains.keys() for h in train_data.chains[c].keys()])
 
     datestr = datetime.now().strftime("%Y_%m_%d_%H%M")
     param_str = datestr+'_fracSameChain'+str(fraction_same_chain).replace('.','pt')+'_lr'+str(learning_rate).replace('.','pt')+'_outputSz'+str(output_size)
