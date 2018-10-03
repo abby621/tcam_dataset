@@ -86,7 +86,7 @@ def main(fraction_same_chain,batch_size,output_size,learning_rate,whichGPU,is_fi
                     if not hotel in good_hotels:
                         train_data.chains[chain].pop(hotel)
 
-    numChains = len(train_data.keys())
+    numChains = len(train_data.chains.keys())
     numHotels = np.sum([len(train_data.chains[c].keys()) for c in train_data.chains.keys()])
     numIms = np.sum([len(train_data.chains[c][h]['ims']) for h in train_data.chains[c].keys() for c in train_data.chains.keys()])
 
