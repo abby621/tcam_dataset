@@ -442,6 +442,11 @@ class SameChainNpairs(SameChainSet):
             else:
                 self.chains[chain][hotel]['sources'] = np.array([im.split('/')[clsPos+1] for im in self.chains[chain][hotel]['ims']])
 
+        min_count = int(float(self.batchSize)*self.fractionSameChain)
+        for chain in self.chains.keys():
+            if len(self.chains[chain].keys()) < min_count:
+                self.chains.pop(chain)
+
         self.people_crop_files = glob.glob(os.path.join(peopleDir,'*.png'))
 
     def getBatch(self):
