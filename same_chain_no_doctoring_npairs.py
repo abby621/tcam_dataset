@@ -135,9 +135,10 @@ def main(fraction_same_chain,batch_size,output_size,learning_rate,whichGPU,is_fi
     anchor_inds = np.arange(0,batch_size,2)
     pos_inds = np.arange(1,batch_size,2)
 
+    labels = tf.gather(label_batch,anchor_inds)
+
     all_feats = tf.squeeze(tf.nn.l2_normalize(layers[featLayer],3))
     anchor_feats = tf.gather(all_feats,anchor_inds)
-    labels = tf.gather(label_batch,anchor_inds)
     pos_feats = tf.gather(all_feats,pos_inds)
 
     loss = npairs_loss(labels,anchor_feats,pos_feats)
@@ -165,8 +166,9 @@ def main(fraction_same_chain,batch_size,output_size,learning_rate,whichGPU,is_fi
 
     writer = tf.summary.FileWriter(log_dir, sess.graph)
 
-    restore_fn = slim.assign_from_checkpoint_fn(pretrained_net,variables_to_restore)
-    restore_fn(sess)
+    if pretrained_net.lower() != 'none':
+        restore_fn = slim.assign_from_checkpoint_fn(pretrained_net,variables_to_restore)
+        restore_fn(sess)
 
     print("Start training...")
     ctr  = 0
