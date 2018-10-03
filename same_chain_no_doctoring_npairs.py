@@ -7,7 +7,7 @@
 """
 
 import tensorflow as tf
-from classfile import SameChainSet
+from classfile import SameChainNpairs
 import os.path
 import time
 from datetime import datetime
