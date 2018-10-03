@@ -473,7 +473,7 @@ class SameChainNpairs(SameChainSet):
             chains[iy] = chain2
 
         ims = []
-        labels = [c for c in classes for ix in range(self.numPos)]
+        labels = [c for c in classes for ix in range(2)]
         for hotel,chain in zip(classes,chains):
             clsPaths = np.array(self.chains[chain][hotel]['ims'])
             clsSources = np.array(self.chains[chain][hotel]['sources'])
