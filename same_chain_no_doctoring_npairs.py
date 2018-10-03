@@ -1,6 +1,6 @@
 """
 # python same_chain_no_doctoring.py fraction_same_chain batch_size output_size learning_rate whichGPU is_finetuning is_overfitting pretrained_net
-# overfitting: python same_chain_no_doctoring_npairs.py .5 30 256 .0001 1 True True './models/ilsvrc2012.ckpt'
+# overfitting: python same_chain_no_doctoring_npairs.py .5 30 256 .0001 1 False True None
 # chop off last layer: python same_chain_no_doctoring_npairs.py .5 120 256 .0001 2 True False './models/ilsvrc2012.ckpt'
 # don't chop off last layer: python same_chain_no_doctoring_npairs.py .5 120 256 .0001 2 False False './models/ilsvrc2012.ckpt'
 # don't chop off last layer + switch to more of the same chain: python same_chain_no_doctoring_npairs.py .75 120 256 .0001 2 False False './output/sameChain/no_doctoring/ckpts/checkpoint-2018_09_30_0809_lr1e-05_outputSz256_margin0pt4-38614'
@@ -137,7 +137,7 @@ def main(fraction_same_chain,batch_size,output_size,learning_rate,whichGPU,is_fi
 
     labels = tf.gather(label_batch,anchor_inds)
 
-    all_feats = tf.squeeze(tf.nn.l2_normalize(layers[featLayer],3))
+    all_feats = layers[featLayer]
     anchor_feats = tf.gather(all_feats,anchor_inds)
     pos_feats = tf.gather(all_feats,pos_inds)
 
