@@ -431,7 +431,7 @@ class SameChainNpairs(SameChainSet):
                 hotel_to_ctr[hotel] = ctr
                 ctr += 1
             if hotel in class_to_chain_mapping.keys():
-                chain = class_to_chain_mapping[hotel_to_ctr[hotel]]
+                chain = class_to_chain_mapping[hotel]
             else:
                 chain = -1
             if not chain in self.chains.keys():
