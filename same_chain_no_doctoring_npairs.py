@@ -172,7 +172,7 @@ def main(fraction_same_chain,same_chain_margin,diff_chain_margin,batch_size,outp
         duration = end_time-start_time
         out_str = 'Step %d: loss = %.6f (batch creation: %.3f | training: %.3f sec)' % (step, loss_val, batch_time,duration)
         # print(out_str)
-        if step % summary_iters == 0:
+        if step % summary_iters == 0 is_overfitting.lower()=='true':
             print(out_str)
             train_log_file.write(out_str+'\n')
         # Update the events file.
