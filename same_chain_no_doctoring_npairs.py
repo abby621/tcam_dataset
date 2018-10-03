@@ -84,6 +84,10 @@ def main(fraction_same_chain,batch_size,output_size,learning_rate,whichGPU,is_fi
                     if not hotel in good_hotels:
                         train_data.chains[chain].pop(hotel)
 
+    numChains = len(train_data.keys())
+    numHotels = np.sum([len(train_data.chains[c].keys()) for c in train_data.chains.keys()])
+    numIms = np.sum([len(train_data.chains[c][h]['ims']) for h in train_data.chains[c].keys() for c in train_data.chains.keys()])
+
     datestr = datetime.now().strftime("%Y_%m_%d_%H%M")
     param_str = datestr+'_fracSameChain'+str(fraction_same_chain).replace('.','pt')+'_lr'+str(learning_rate).replace('.','pt')+'_outputSz'+str(output_size)
     logfile_path = os.path.join(log_dir,param_str+'_npairs_train.txt')
@@ -91,6 +95,9 @@ def main(fraction_same_chain,batch_size,output_size,learning_rate,whichGPU,is_fi
     print '------------'
     print ''
     print 'Going to train with the following parameters:'
+    print 'Num chains:', numChains
+    print 'Num hotels:', numHotels
+    print 'Num ims:', numIms
     print 'Output size: ', output_size
     train_log_file.write('Output size: '+str(output_size)+'\n')
     print 'Learning rate: ',learning_rate
