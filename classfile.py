@@ -436,7 +436,7 @@ class SameChainNpairs(SameChainSet):
                 chain = -1
             if not chain in self.chains.keys():
                  self.chains[chain] = {}
-            if not hotel in self.chains[chain].keys():
+            if not hotel_to_ctr[hotel] in self.chains[chain].keys():
                 self.chains[chain][hotel_to_ctr[hotel]] = {}
                 self.chains[chain][hotel_to_ctr[hotel]]['ims'] = []
             for t in temp:
