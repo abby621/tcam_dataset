@@ -96,8 +96,11 @@ def main(fraction_same_chain,batch_size,output_size,learning_rate,whichGPU,is_fi
     print ''
     print 'Going to train with the following parameters:'
     print 'Num chains:', numChains
+    train_log_file.write('Num chains: '+str(numChains)+'\n')
     print 'Num hotels:', numHotels
+    train_log_file.write('Num hotels: '+str(numHotels)+'\n')
     print 'Num ims:', numIms
+    train_log_file.write('Num ims: '+str(numIms)+'\n')
     print 'Output size: ', output_size
     train_log_file.write('Output size: '+str(output_size)+'\n')
     print 'Learning rate: ',learning_rate
