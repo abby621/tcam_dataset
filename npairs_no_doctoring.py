@@ -1,8 +1,8 @@
 """
 # python same_chain_no_doctoring.py batch_size output_size learning_rate whichGPU is_finetuning is_overfitting pretrained_net
-# overfitting: python npairs_expedia.py 30 256 .0001 0 False True None
-# chop off last layer: python npairs_expedia.py 120 256 .0001 0 True False './models/ilsvrc2012.ckpt'
-# don't chop off last layer: python npairs_expedia.py 120 256 .0001 0 False False './models/ilsvrc2012.ckpt'
+# overfitting: python npairs_no_doctoring.py 30 256 .0001 0 False True None
+# chop off last layer: python npairs_no_doctoring.py 120 256 .0001 0 True False './models/ilsvrc2012.ckpt'
+# don't chop off last layer: python npairs_no_doctoring.py 120 256 .0001 0 False False './models/ilsvrc2012.ckpt'
 """
 
 import tensorflow as tf
@@ -37,9 +37,9 @@ def main(batch_size,output_size,learning_rate,whichGPU,is_finetuning,is_overfitt
 
     signal.signal(signal.SIGINT, handler)
 
-    ckpt_dir = './output/npairs/expedia/ckpts'
-    log_dir = './output/npairs/expedia/logs'
-    train_filename = './input/expedia_train_by_hotel.txt'
+    ckpt_dir = './output/npairs/no_doctoring/ckpts'
+    log_dir = './output/npairs/no_doctoring/logs'
+    train_filename = './input/train_by_hotel.txt'
     mean_file = './input/meanIm.npy'
 
     img_size = [256, 256]
