@@ -67,7 +67,7 @@ def main(batch_size,output_size,learning_rate,whichGPU,is_finetuning,is_overfitt
     numIms = np.sum([len(train_data.hotels[h]['ims']) for h in train_data.hotels.keys()])
 
     datestr = datetime.now().strftime("%Y_%m_%d_%H%M")
-    param_str = datestr+.replace('.','pt')+'_lr'+str(learning_rate).replace('.','pt')+'_outputSz'+str(output_size)
+    param_str = datestr+'_lr'+str(learning_rate).replace('.','pt')+'_outputSz'+str(output_size)
     logfile_path = os.path.join(log_dir,param_str+'_npairs_train.txt')
     train_log_file = open(logfile_path,'a')
     print '------------'
