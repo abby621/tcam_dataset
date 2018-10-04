@@ -507,3 +507,88 @@ class SameChainNpairs(SameChainSet):
         batch = self.getProcessedImages(ims)
         chains = [c for c in chains for ix in range(2)]
         return batch, labels, chains, ims
+
+class Npairs(SameChainSet):
+    def __init__(self, image_list, mean_file, image_size, crop_size, batchSize=100, isTraining=True, isOverfitting=False):
+        self.image_size = image_size
+        self.crop_size = crop_size
+        self.isTraining = isTraining
+        self.isOverfitting = isOverfitting
+
+        self.meanFile = mean_file
+        meanIm = np.load(self.meanFile)
+
+        if meanIm.shape[0] == 3:
+            meanIm = np.moveaxis(meanIm, 0, -1)
+
+        self.meanImage = cv2.resize(meanIm, (self.crop_size[0], self.crop_size[1]))
+
+        #img = img - self.meanImage
+        if len(self.meanImage.shape) < 3:
+            self.meanImage = np.asarray(np.dstack((self.meanImage, self.meanImage, self.meanImage)))
+
+        self.batchSize = batchSize
+
+        self.fractionSameChain = fractionSameChain
+        self.randomizeChainFraction = randomizeChainFraction
+
+        # this is SUPER hacky -- if the test file is 'occluded' then the class is in the 5th position, not the 4th
+        if 'occluded' in image_list:
+            clsPos = 4
+        else:
+            clsPos = 3
+
+        self.hotels = {}
+        # Reads a .txt file containing image paths of image sets where each line contains
+        # all images from the same set and the first image is the anchor
+        hotel_to_ctr = {}
+        ctr = 0
+        f = open(image_list, 'r')
+        for line in f:
+            temp = line.strip('\n').split(' ')
+            hotel = int(temp[0].split('/')[clsPos])
+            if not hotel in hotel_to_ctr.keys():
+                hotel_to_ctr[hotel] = ctr
+                ctr += 1
+            if not hotel_to_ctr[hotel] in self.hotels.keys():
+                self.hotels[hotel_to_ctr[hotel]] = {}
+                self.hotels[hotel_to_ctr[hotel]]['ims'] = []
+            for t in temp:
+                if t not in self.hotels[hotel_to_ctr[hotel]]['ims']:
+                    self.hotels[hotel_to_ctr[hotel]]['ims'].append(t)
+            if len(self.hotels[hotel_to_ctr[hotel]]['ims']) < 2:
+                self.hotels[hotel_to_ctr[hotel]].pop(hotel_to_ctr[hotel])
+            else:
+                self.hotels[hotel_to_ctr[hotel]]['sources'] = np.array([im.split('/')[clsPos+1] for im in self.hotels[hotel_to_ctr[hotel]]['ims']])
+
+        self.people_crop_files = glob.glob(os.path.join(peopleDir,'*.png'))
+
+    def getBatch(self):
+        numClasses = self.batchSize/2
+
+        classes = np.random.choices(self.hotels.keys(),numClasses,replace=False)
+
+        ims = []
+        labels = [c for c in classes for ix in range(2)]
+        for hotel in classes:
+            clsPaths = np.array(self.chains[chain][hotel]['ims'])
+            clsSources = np.array(self.chains[chain][hotel]['sources'])
+            tcamInds = np.where(clsSources=='tcam')[0]
+            exInds = np.where(clsSources=='expedia')[0]
+            if len(tcamInds) >= 1 and len(exInds) >= 1:
+                numTcam = 1
+                numEx = 1
+            elif len(tcamInds) < 1 and len(exInds) > 1:
+                numEx = 2
+                numTcam = 0
+            else:
+                numTcam = 2
+                numEx = 0
+
+            random.shuffle(tcamInds)
+            random.shuffle(exInds)
+            ims.extend(list(clsPaths[tcamInds[:numTcam]]))
+            ims.extend(list(clsPaths[exInds[:numEx]]))
+
+        batch = self.getProcessedImages(ims)
+        return batch, labels, ims
