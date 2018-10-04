@@ -563,7 +563,7 @@ class Npairs(SameChainSet):
     def getBatch(self):
         numClasses = self.batchSize/2
 
-        classes = np.random.choices(self.hotels.keys(),numClasses,replace=False)
+        classes = np.random.choice(self.hotels.keys(),numClasses,replace=False)
 
         ims = []
         labels = [c for c in classes for ix in range(2)]
