@@ -1,7 +1,7 @@
 """
 # python npairs_doctoring.py batch_size output_size learning_rate whichGPU is_finetuning is_overfitting pretrained_net
 # overfitting: python npairs_doctoring.py 30 256 .0001 0 False True None
-# chop off last layer: python npairs_doctoring.py 120 256 .0001 0 True False './models/ilsvrc2012.ckpt'
+# chop off last layer: python npairs_doctoring.py 120 256 .0001 3 True False './models/ilsvrc2012.ckpt'
 # don't chop off last layer: python npairs_doctoring.py 120 256 .0001 0 False False './models/ilsvrc2012.ckpt'
 """
 
@@ -89,6 +89,7 @@ def main(batch_size,output_size,learning_rate,whichGPU,is_finetuning,is_overfitt
 
     # Queuing op loads data into input tensor
     image_batch = tf.placeholder(tf.float32, shape=[batch_size, crop_size[0], crop_size[0], 3])
+    label_batch = tf.placeholder(tf.int32, shape=[batch_size])
     people_mask_batch = tf.placeholder(tf.float32, shape=[batch_size, crop_size[0], crop_size[0], 1])
 
     # doctor image params
@@ -258,7 +259,7 @@ def main(batch_size,output_size,learning_rate,whichGPU,is_finetuning,is_overfitt
         people_masks = train_data.getPeopleMasks()
         batch_time = time.time() - start_time
         start_time = time.time()
-        _, loss_val = sess.run([train_op, loss], feed_dict={image_batch: batch, people_mask_batch: people_masks})
+        _, loss_val = sess.run([train_op, loss], feed_dict={image_batch: batch, label_batch:hotels, people_mask_batch: people_masks})
         end_time = time.time()
         duration = end_time-start_time
         out_str = 'Step %d: loss = %.6f (batch creation: %.3f | training: %.3f sec)' % (step, loss_val, batch_time,duration)
