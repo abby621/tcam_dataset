@@ -73,8 +73,6 @@ def main(batch_size,output_size,learning_rate,whichGPU,is_finetuning,is_overfitt
     print '------------'
     print ''
     print 'Going to train with the following parameters:'
-    print 'Num chains:', numChains
-    train_log_file.write('Num chains: '+str(numChains)+'\n')
     print 'Num hotels:', numHotels
     train_log_file.write('Num hotels: '+str(numHotels)+'\n')
     print 'Num ims:', numIms
