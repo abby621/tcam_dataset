@@ -529,9 +529,6 @@ class Npairs(SameChainSet):
 
         self.batchSize = batchSize
 
-        self.fractionSameChain = fractionSameChain
-        self.randomizeChainFraction = randomizeChainFraction
-
         # this is SUPER hacky -- if the test file is 'occluded' then the class is in the 5th position, not the 4th
         if 'occluded' in image_list:
             clsPos = 4
