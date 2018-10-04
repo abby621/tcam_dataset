@@ -568,8 +568,8 @@ class Npairs(SameChainSet):
         ims = []
         labels = [c for c in classes for ix in range(2)]
         for hotel in classes:
-            clsPaths = np.array(self.chains[chain][hotel]['ims'])
-            clsSources = np.array(self.chains[chain][hotel]['sources'])
+            clsPaths = np.array(self.hotels[hotel]['ims'])
+            clsSources = np.array(self.hotels[hotel]['sources'])
             tcamInds = np.where(clsSources=='tcam')[0]
             exInds = np.where(clsSources=='expedia')[0]
             if len(tcamInds) >= 1 and len(exInds) >= 1:
