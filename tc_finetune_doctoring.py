@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 # python tc_finetune_doctoring.py margin batch_size output_size learning_rate whichGPU is_finetuning pretrained_net
-# chop off last layer: python tc_finetune_doctoring.py .3 120 256 .0001 1 True './models/ilsvrc.ckpt'
-# don't chop off last layer: python tc_finetune_doctoring.py .3 120 256 .0001 3 False './models/ilsvrc.ckpt'
+# chop off last layer: python tc_finetune_doctoring.py .3 120 256 .0001 1 True './models/ilsvrc2012.ckpt'
+# don't chop off last layer: python tc_finetune_doctoring.py .3 120 256 .0001 3 False './models/ilsvrc2012.ckpt'
 """
 
 import tensorflow as tf
@@ -23,6 +23,7 @@ import signal
 import time
 import sys
 import itertools
+from triplet_loss import *
 
 def main(margin,batch_size,output_size,learning_rate,whichGPU,is_finetuning,pretrained_net):
     def handler(signum, frame):
@@ -89,6 +90,7 @@ def main(margin,batch_size,output_size,learning_rate,whichGPU,is_finetuning,pret
 
     # Queuing op loads data into input tensor
     image_batch = tf.placeholder(tf.float32, shape=[batch_size, crop_size[0], crop_size[0], 3])
+    label_batch = tf.placeholder(tf.int32, shape=[batch_size])
     people_mask_batch = tf.placeholder(tf.float32, shape=[batch_size, crop_size[0], crop_size[0], 1])
 
     # doctor image params
@@ -212,45 +214,7 @@ def main(margin,batch_size,output_size,learning_rate,whichGPU,is_finetuning,pret
             variables_to_restore.append(var)
 
     feat = tf.squeeze(tf.nn.l2_normalize(layers[featLayer],3))
-    expanded_a = tf.expand_dims(feat, 1)
-    expanded_b = tf.expand_dims(feat, 0)
-    #D = tf.reduce_sum(tf.squared_difference(expanded_a, expanded_b), 2)
-    D = 1 - tf.reduce_sum(tf.multiply(expanded_a, expanded_b), 2)
-
-    # if not train_data.isOverfitting:
-    #     D_max = tf.reduce_max(D)
-    #     D_mean, D_var = tf.nn.moments(D, axes=[0,1])
-    #     lowest_nonzero_distance = tf.reduce_max(-D)
-    #     bottom_thresh = 1.2*lowest_nonzero_distance
-    #     top_thresh = (D_max + D_mean)/2.0
-    #     bool_mask = tf.logical_and(D>=bottom_thresh,D<=top_thresh)
-    #     D = tf.multiply(D,tf.cast(bool_mask,tf.float32))
-
-    posIdx = np.floor(np.arange(0,batch_size)/num_pos_examples).astype('int')
-    posIdx10 = num_pos_examples*posIdx
-    posImInds = np.tile(posIdx10,(num_pos_examples,1)).transpose()+np.tile(np.arange(0,num_pos_examples),(batch_size,1))
-    anchorInds = np.tile(np.arange(0,batch_size),(num_pos_examples,1)).transpose()
-
-    posImInds_flat = posImInds.ravel()
-    anchorInds_flat = anchorInds.ravel()
-
-    posPairInds = zip(posImInds_flat,anchorInds_flat)
-    posDists = tf.reshape(tf.gather_nd(D,posPairInds),(batch_size,num_pos_examples))
-
-    shiftPosDists = tf.reshape(posDists,(1,batch_size,num_pos_examples))
-    posDistsRep = tf.tile(shiftPosDists,(batch_size,1,1))
-
-    allDists = tf.tile(tf.expand_dims(D,2),(1,1,num_pos_examples))
-
-    ra, rb, rc = np.meshgrid(np.arange(0,batch_size),np.arange(0,batch_size),np.arange(0,num_pos_examples))
-
-    bad_negatives = np.floor((ra)/num_pos_examples) == np.floor((rb)/num_pos_examples)
-    bad_positives = np.mod(rb,num_pos_examples) == np.mod(rc,num_pos_examples)
-
-    mask = ((1-bad_negatives)*(1-bad_positives)).astype('float32')
-
-    # loss = tf.reduce_sum(tf.maximum(0.,tf.multiply(mask,margin + posDistsRep - allDists)))/batch_size
-    loss = tf.reduce_mean(tf.maximum(0.,tf.multiply(mask,margin + posDistsRep - allDists)))
+    loss = batch_all_triplet_loss(label_batch, feat, margin, squared=False)
 
     # slightly counterintuitive to not define "init_op" first, but tf vars aren't known until added to graph
     update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
@@ -284,7 +248,7 @@ def main(margin,batch_size,output_size,learning_rate,whichGPU,is_finetuning,pret
         start_time = time.time()
         batch, labels, ims = train_data.getBatch()
         people_masks = train_data.getPeopleMasks()
-        _, loss_val = sess.run([train_op, loss], feed_dict={image_batch: batch, people_mask_batch: people_masks})
+        _, loss_val = sess.run([train_op, loss], feed_dict={image_batch: batch, label_batch:labels, people_mask_batch: people_masks})
         end_time = time.time()
         duration = end_time-start_time
         out_str = 'Step %d: loss = %.6f -- (%.3f sec)' % (step, loss_val,duration)
