@@ -88,7 +88,7 @@ def main(batch_size,output_size,learning_rate,whichGPU,is_finetuning,is_overfitt
     print '------------'
 
     # Queuing op loads data into input tensor
-    repMeanIm = np.tile(np.expand_dims(train_Data.meanImage,0),[batch_size,1,1,1])
+    repMeanIm = np.tile(np.expand_dims(train_data.meanImage,0),[batch_size,1,1,1])
     # this is dumb, but in the non-doctored case we subtract off the mean in the batch generation. here we want to do it after the data augmentation
     image_batch_mean_subtracted = tf.placeholder(tf.float32, shape=[batch_size, crop_size[0], crop_size[0], 3])
     image_batch = tf.add(image_batch_mean_subtracted,repMeanIm)
