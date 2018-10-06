@@ -88,7 +88,10 @@ def main(batch_size,output_size,learning_rate,whichGPU,is_finetuning,is_overfitt
     print '------------'
 
     # Queuing op loads data into input tensor
-    image_batch = tf.placeholder(tf.float32, shape=[batch_size, crop_size[0], crop_size[0], 3])
+    repMeanIm = np.tile(np.expand_dims(train_Data.meanImage,0),[batch_size,1,1,1])
+    # this is dumb, but in the non-doctored case we subtract off the mean in the batch generation. here we want to do it after the data augmentation
+    image_batch_mean_subtracted = tf.placeholder(tf.float32, shape=[batch_size, crop_size[0], crop_size[0], 3])
+    image_batch = tf.add(image_batch_mean_subtracted,repMeanIm)
     label_batch = tf.placeholder(tf.int32, shape=[batch_size])
     people_mask_batch = tf.placeholder(tf.float32, shape=[batch_size, crop_size[0], crop_size[0], 1])
 
@@ -198,7 +201,7 @@ def main(batch_size,output_size,learning_rate,whichGPU,is_finetuning,is_overfitt
     masked_batch = tf.multiply(masked_masks,filtered_batch)
 
     noise = tf.random_normal(shape=[batch_size, crop_size[0], crop_size[0], 1], mean=0.0, stddev=0.0025, dtype=tf.float32)
-    final_batch = tf.add(masked_batch,noise)
+    final_batch = tf.add(tf.subtract(masked_batch,repMeanIm),noise)
 
     print("Preparing network...")
     with slim.arg_scope(resnet_v2.resnet_arg_scope()):
