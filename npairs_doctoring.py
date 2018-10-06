@@ -259,11 +259,13 @@ def main(batch_size,output_size,learning_rate,whichGPU,is_finetuning,is_overfitt
         people_masks = train_data.getPeopleMasks()
         batch_time = time.time() - start_time
         start_time = time.time()
-        _, loss_val = sess.run([train_op, loss], feed_dict={image_batch: batch, label_batch:hotels, people_mask_batch: people_masks})
+        _, fb, loss_val = sess.run([train_op, final_batch, loss], feed_dict={image_batch: batch,label_batch:hotels, people_mask_batch: people_masks})
         end_time = time.time()
         duration = end_time-start_time
         out_str = 'Step %d: loss = %.6f (batch creation: %.3f | training: %.3f sec)' % (step, loss_val, batch_time,duration)
         # print(out_str)
+        if step == 0:
+            np.save(os.path.join(log_dir,'checkpoint-'+param_str+'_example_batch.npy'),fb)
         if step % summary_iters == 0 or is_overfitting.lower()=='true':
             print(out_str)
             train_log_file.write(out_str+'\n')
