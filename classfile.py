@@ -463,7 +463,7 @@ class SameChainNpairs(SameChainSet):
 
         # the first fraction of the classes in the batch should be from the same chain -- this is a version of hard mining,
         # making it so half of the negative examples we see are "harder" because they come from the same chain
-        while len(self.chains[chain].keys()) < int(float(numClasses)*self.fractionSameChain):
+        while len(self.chains[chain].keys()) < int(float(numClasses)*self.fractionSameChain) or chain == -1:
             chain = np.random.choice(self.chains.keys())
 
         classes[:int(float(numClasses)*self.fractionSameChain)] = np.random.choice(self.chains[chain].keys(),int(float(numClasses)*self.fractionSameChain),replace=False)
