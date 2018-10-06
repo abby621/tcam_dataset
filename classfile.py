@@ -594,5 +594,5 @@ class Npairs(SameChainSet):
         # batch = self.getProcessedImages(ims)
         batch = np.zeros((self.batchSize,self.crop_size[0],self.crop_size[1],3))
         for idx in range(self.batchSize):
-            batch[idx,:,:,:] = self.getProcessedImage(self, ims[idx])
+            batch[idx,:,:,:] = self.getProcessedImage(ims[idx])
         return batch, labels, ims
