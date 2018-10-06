@@ -144,12 +144,11 @@ def main(fraction_same_chain,batch_size,output_size,learning_rate,whichGPU,is_fi
     loss = npairs_loss(labels,anchor_feats,pos_feats)
 
     # slightly counterintuitive to not define "init_op" first, but tf vars aren't known until added to graph
-    # update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
+    update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
     with tf.control_dependencies(update_ops):
-        train_op = tf.train.AdamOptimizer(learning_rate).minimize(loss)
-        # optimizer = tf.train.AdamOptimizer(learning_rate)
-        # train_op = slim.learning.create_train_op(loss, optimizer)
-
+        # train_op = tf.train.AdamOptimizer(learning_rate).minimize(loss)
+        optimizer = tf.train.AdamOptimizer(learning_rate)
+        train_op = slim.learning.create_train_op(loss, optimizer)
     summary_op = tf.summary.merge_all()
     init_op = tf.global_variables_initializer()
 
