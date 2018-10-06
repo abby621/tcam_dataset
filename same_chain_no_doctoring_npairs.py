@@ -178,7 +178,7 @@ def main(fraction_same_chain,batch_size,output_size,learning_rate,whichGPU,is_fi
         start_time = time.time()
         _, fb, loss_val = sess.run([train_op, final_batch, loss], feed_dict={image_batch: batch,label_batch:hotels})
         if step == 0:
-            np.save(log_dir+'example_batch.npy',fb)
+            np.save(os.path.join(log_dir,'checkpoint-'+param_str+'_example_batch.npy'),fb)
         end_time = time.time()
         duration = end_time-start_time
         out_str = 'Step %d: loss = %.6f (batch creation: %.3f | training: %.3f sec)' % (step, loss_val, batch_time,duration)
