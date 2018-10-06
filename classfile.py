@@ -463,14 +463,14 @@ class SameChainNpairs(SameChainSet):
 
         # the first fraction of the classes in the batch should be from the same chain -- this is a version of hard mining,
         # making it so half of the negative examples we see are "harder" because they come from the same chain
-        while len(self.chains[chain].keys()) < int(float(numClasses)*self.fractionSameChain)*2:
+        while len(self.chains[chain].keys()) < int(float(numClasses)*self.fractionSameChain):
             chain = np.random.choice(self.chains.keys())
 
-        classes[:int(float(numClasses)*self.fractionSameChain)*2] = np.random.choice(self.chains[chain].keys(),int(float(numClasses)*self.fractionSameChain),replace=False)
-        chains[:int(float(numClasses)*self.fractionSameChain)*2] = chain
+        classes[:int(float(numClasses)*self.fractionSameChain)] = np.random.choice(self.chains[chain].keys(),int(float(numClasses)*self.fractionSameChain),replace=False)
+        chains[:int(float(numClasses)*self.fractionSameChain)] = chain
 
         # the other fraction of the classes should be from random hotels
-        for iy in range(int(float(numClasses)*self.fractionSameChain)*2,numClasses):
+        for iy in range(int(float(numClasses)*self.fractionSameChain),numClasses):
             chain2 = np.random.choice(self.chains.keys())
             numHotelsAvailable = np.sum(np.array([1 for h in self.chains[chain2].keys() if h not in classes]))
             while chain2 == chain or numHotelsAvailable < 1:
