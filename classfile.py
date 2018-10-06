@@ -504,7 +504,11 @@ class SameChainNpairs(SameChainSet):
             ims.extend(list(clsPaths[tcamInds[:numTcam]]))
             ims.extend(list(clsPaths[exInds[:numEx]]))
 
-        batch = self.getProcessedImages(ims)
+        # batch = self.getProcessedImages(ims)
+        batch = np.zeros((self.batchSize,self.crop_size[0],self.crop_size[1],3))
+        for idx in range(self.batchSize):
+            batch[idx,:,:,:] = self.getProcessedImage(self, ims[idx])
+
         chains = [c for c in chains for ix in range(2)]
         return batch, labels, chains, ims
 
@@ -587,5 +591,8 @@ class Npairs(SameChainSet):
             ims.extend(list(clsPaths[tcamInds[:numTcam]]))
             ims.extend(list(clsPaths[exInds[:numEx]]))
 
-        batch = self.getProcessedImages(ims)
+        # batch = self.getProcessedImages(ims)
+        batch = np.zeros((self.batchSize,self.crop_size[0],self.crop_size[1],3))
+        for idx in range(self.batchSize):
+            batch[idx,:,:,:] = self.getProcessedImage(self, ims[idx])
         return batch, labels, ims
