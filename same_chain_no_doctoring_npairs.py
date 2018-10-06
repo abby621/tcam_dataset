@@ -1,7 +1,7 @@
 """
 # python same_chain_no_doctoring.py fraction_same_chain batch_size output_size learning_rate whichGPU is_finetuning is_overfitting pretrained_net
 # overfitting: python same_chain_no_doctoring_npairs.py .5 30 256 .0001 1 False True None
-# chop off last layer: python same_chain_no_doctoring_npairs.py .5 120 256 .0001 2 True False './models/ilsvrc2012.ckpt'
+# chop off last layer: python same_chain_no_doctoring_npairs.py .5 120 256 .0005 1 True False './output/npairs/no_doctoring/ckpts/checkpoint-2018_10_04_0905_lr0pt0001_outputSz256-34999'
 # don't chop off last layer: python same_chain_no_doctoring_npairs.py .5 120 256 .0001 2 False False './models/ilsvrc2012.ckpt'
 # don't chop off last layer + switch to more of the same chain: python same_chain_no_doctoring_npairs.py .75 120 256 .0001 2 False False './output/sameChain/no_doctoring/ckpts/checkpoint-2018_09_30_0809_lr1e-05_outputSz256_margin0pt4-38614'
 """
@@ -46,7 +46,7 @@ def main(fraction_same_chain,batch_size,output_size,learning_rate,whichGPU,is_fi
 
     cls_to_chain = {}
     for hotel in jsonTrainData.keys():
-        if jsonTrainData[hotel]['chainId'] != -1:
+        if jsonTrainData[hotel]['chainId'] != -1 and jsonTrainData[hotel]['chainId'] != 23 and jsonTrainData[hotel]['chainId'] != 25: #-1 is unknown chain, 23 is "Prince Hotel", 25 is "*w Hotel"
             cls_to_chain[int(hotel)] = jsonTrainData[hotel]['chainId']
 
     mean_file = './input/meanIm.npy'
@@ -144,11 +144,11 @@ def main(fraction_same_chain,batch_size,output_size,learning_rate,whichGPU,is_fi
     loss = npairs_loss(labels,anchor_feats,pos_feats)
 
     # slightly counterintuitive to not define "init_op" first, but tf vars aren't known until added to graph
-    update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
+    # update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
     with tf.control_dependencies(update_ops):
-        # train_op = tf.train.AdamOptimizer(learning_rate).minimize(loss)
-        optimizer = tf.train.AdamOptimizer(learning_rate)
-        train_op = slim.learning.create_train_op(loss, optimizer)
+        train_op = tf.train.AdamOptimizer(learning_rate).minimize(loss)
+        # optimizer = tf.train.AdamOptimizer(learning_rate)
+        # train_op = slim.learning.create_train_op(loss, optimizer)
 
     summary_op = tf.summary.merge_all()
     init_op = tf.global_variables_initializer()
@@ -177,7 +177,9 @@ def main(fraction_same_chain,batch_size,output_size,learning_rate,whichGPU,is_fi
         batch, hotels, chains, ims = train_data.getBatch()
         batch_time = time.time() - start_time
         start_time = time.time()
-        _, loss_val = sess.run([train_op, loss], feed_dict={image_batch: batch,label_batch:hotels})
+        _, fb, loss_val = sess.run([train_op, final_batch, loss], feed_dict={image_batch: batch,label_batch:hotels})
+        if step == 0:
+            np.save(log_dir+'example_batch.npy',fb)
         end_time = time.time()
         duration = end_time-start_time
         out_str = 'Step %d: loss = %.6f (batch creation: %.3f | training: %.3f sec)' % (step, loss_val, batch_time,duration)
