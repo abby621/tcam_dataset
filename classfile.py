@@ -600,3 +600,72 @@ class Npairs(SameChainSet):
 
         batch = self.getProcessedImages(ims)
         return batch, labels, ims
+
+class Npairs_generic(SameChainSet):
+    def __init__(self, image_list, mean_file, image_size, crop_size, batchSize=100, isTraining=True, isOverfitting=False):
+        self.image_size = image_size
+        self.crop_size = crop_size
+        self.isTraining = isTraining
+        self.isOverfitting = isOverfitting
+
+        self.meanFile = mean_file
+        meanIm = np.load(self.meanFile)
+
+        if meanIm.shape[0] == 3:
+            meanIm = np.moveaxis(meanIm, 0, -1)
+
+        self.meanImage = cv2.resize(meanIm, (self.crop_size[0], self.crop_size[1]))
+
+        #img = img - self.meanImage
+        if len(self.meanImage.shape) < 3:
+            self.meanImage = np.asarray(np.dstack((self.meanImage, self.meanImage, self.meanImage)))
+
+        self.batchSize = batchSize
+
+        # this is SUPER hacky -- if the test file is 'occluded' then the class is in the 5th position, not the 4th
+        if 'occluded' in image_list:
+            clsPos = 4
+        elif 'mnist' in image_list:
+            clsPos = 6
+        else:
+            clsPos = 3
+
+        self.classes = {}
+        # Reads a .txt file containing image paths of image sets where each line contains
+        # all images from the same set and the first image is the anchor
+        class_to_ctr = {}
+        ctr = 0
+        f = open(image_list, 'r')
+        for line in f:
+            temp = line.strip('\n').split(' ')
+            cls = int(temp[0].split('/')[clsPos])
+            if not cls in class_to_ctr.keys():
+                class_to_ctr[cls] = ctr
+                ctr += 1
+            if not class_to_ctr[hotel] in self.classes.keys():
+                self.classes[class_to_ctr[cls]] = {}
+                self.classes[class_to_ctr[cls]]['ims'] = []
+            for t in temp:
+                if t not in self.classes[class_to_ctr[cls]]['ims']:
+                    self.classes[class_to_ctr[cls]]['ims'].append(t)
+            if len(self.classes[class_to_ctr[cls]]['ims']) < 2:
+                self.classes[class_to_ctr[cls]].pop(class_to_ctr[cls])
+            else:
+                self.classes[class_to_ctr[cls]]['sources'] = np.array([im.split('/')[clsPos+1] for im in self.classes[class_to_ctr[cls]]['ims']])
+
+        self.people_crop_files = glob.glob(os.path.join(peopleDir,'*.png'))
+
+    def getBatch(self):
+        numClasses = self.batchSize/2
+
+        classes = np.random.choice(self.classes.keys(),numClasses,replace=False)
+
+        ims = []
+        labels = [c for c in classes for ix in range(2)]
+        for cls in classes:
+            clsPaths = np.array(self.classes[cls]['ims'])
+            random.shuffle(clsPaths)
+            ims.extend(list(clsPaths[:2]))
+
+        batch = self.getProcessedImages(ims)
+        return batch, labels, ims
