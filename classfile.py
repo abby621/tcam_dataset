@@ -719,7 +719,7 @@ class CombinatorialTripletSet_generic(CombinatorialTripletSet):
 
     def getBatch(self):
         numClasses = self.batchSize/self.numPos # need to handle the case where we need more classes than we have?
-        classes = np.random.choice(self.hotels.keys(),numClasses,replace=False)
+        classes = np.random.choice(self.classes.keys(),numClasses,replace=False)
 
         batch = np.zeros([self.batchSize, self.crop_size[0], self.crop_size[1], 3])
 
