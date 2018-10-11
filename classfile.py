@@ -642,7 +642,7 @@ class Npairs_generic(SameChainSet):
             if not cls in class_to_ctr.keys():
                 class_to_ctr[cls] = ctr
                 ctr += 1
-            if not class_to_ctr[hotel] in self.classes.keys():
+            if not class_to_ctr[cls] in self.classes.keys():
                 self.classes[class_to_ctr[cls]] = {}
                 self.classes[class_to_ctr[cls]]['ims'] = []
             for t in temp:
