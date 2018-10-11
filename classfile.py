@@ -218,12 +218,12 @@ class NonTripletSet:
 
         self.people_crop_files = glob.glob(os.path.join(peopleDir,'*.png'))
 
-    def getBatch(self):
+    def getBatch(self): # this is currently broken
         batch = np.zeros([self.batch_size, self.crop_size[0], self.crop_size[1], 3])
 
         inds = np.random.sample(self.indexes)
-        ims = self.files[inds]
-        classes = self.files[inds]
+        ims = self.hotels[inds]
+        classes = self.hotels[inds]
         for im in ims:
             img = self.getProcessedImage(imPath)
             if img is not None:
@@ -742,3 +742,47 @@ class CombinatorialTripletSet_generic(CombinatorialTripletSet):
                 ctr += 1
 
         return batch, labels, ims
+
+class NonTripletSet_generic(NonTripletSet):
+    def __init__(self, image_list, mean_file, image_size, crop_size, batchSize=100, num_pos=10, isTraining=True, isOverfitting=False):
+        self.image_size = image_size
+        self.crop_size = crop_size
+        self.isTraining = isTraining
+        self.isOverfitting = isOverfitting
+
+        self.meanFile = mean_file
+        meanIm = np.load(self.meanFile)
+
+        if meanIm.shape[0] == 3:
+            meanIm = np.moveaxis(meanIm, 0, -1)
+
+        self.meanImage = cv2.resize(meanIm, (self.crop_size[0], self.crop_size[1]))
+
+        #img = img - self.meanImage
+        if len(self.meanImage.shape) < 3:
+            self.meanImage = np.asarray(np.dstack((self.meanImage, self.meanImage, self.meanImage)))
+
+        self.numPos = num_pos
+        self.batchSize = batchSize
+
+        # this is SUPER hacky -- if the test file is 'occluded' then the class is in the 5th position, not the 4th
+        if 'occluded' in image_list:
+            clsPos = 4
+        elif 'mnist' in image_list:
+            clsPos = 6
+        else:
+            clsPos = 3
+
+        self.classes = {}
+        # Reads a .txt file containing image paths of image sets where each line contains
+        # all images from the same set and the first image is the anchor
+        f = open(image_list, 'r')
+        for line in f:
+            temp = line.strip('\n').split(' ')
+            cls = int(temp[0].split('/')[clsPos])
+            self.classes[cls] = {}
+            self.classes[cls]['ims'] = temp
+        for cls in self.classes.keys():
+            self.classes[cls]['sources'] = np.array([im.split('/')[clsPos+1] for im in self.classes[cls]['ims']])
+
+        self.people_crop_files = glob.glob(os.path.join(peopleDir,'*.png'))
