@@ -669,3 +669,76 @@ class Npairs_generic(SameChainSet):
 
         batch = self.getProcessedImages(ims)
         return batch, labels, ims
+
+class CombinatorialTripletSet_generic(CombinatorialTripletSet):
+    def __init__(self, image_list, mean_file, image_size, crop_size, batchSize=100, num_pos=10, isTraining=True, isOverfitting=False):
+        self.image_size = image_size
+        self.crop_size = crop_size
+        self.isTraining = isTraining
+        self.isOverfitting = isOverfitting
+
+        self.meanFile = mean_file
+        meanIm = np.load(self.meanFile)
+
+        if meanIm.shape[0] == 3:
+            meanIm = np.moveaxis(meanIm, 0, -1)
+
+        self.meanImage = cv2.resize(meanIm, (self.crop_size[0], self.crop_size[1]))
+
+        #img = img - self.meanImage
+        if len(self.meanImage.shape) < 3:
+            self.meanImage = np.asarray(np.dstack((self.meanImage, self.meanImage, self.meanImage)))
+
+        self.numPos = num_pos
+        self.batchSize = batchSize
+
+        # this is SUPER hacky -- if the test file is 'occluded' then the class is in the 5th position, not the 4th
+        if 'occluded' in image_list:
+            clsPos = 4
+        elif 'mnist' in image_list:
+            clsPos = 6
+        else:
+            clsPos = 3
+
+        self.classes = {}
+        # Reads a .txt file containing image paths of image sets where each line contains
+        # all images from the same set and the first image is the anchor
+        f = open(image_list, 'r')
+        for line in f:
+            temp = line.strip('\n').split(' ')
+            cls = int(temp[0].split('/')[clsPos])
+            self.classes[cls] = {}
+            self.classes[cls]['ims'] = temp
+        for cls in self.classes.keys():
+            if len(self.classes[cls]['ims']) < self.numPos:
+                self.classes.pop(cls)
+            else:
+                self.classes[cls]['sources'] = np.array([im.split('/')[clsPos+1] for im in self.classes[cls]['ims']])
+
+        self.people_crop_files = glob.glob(os.path.join(peopleDir,'*.png'))
+
+    def getBatch(self):
+        numClasses = self.batchSize/self.numPos # need to handle the case where we need more classes than we have?
+        classes = np.random.choice(self.hotels.keys(),numClasses,replace=False)
+
+        batch = np.zeros([self.batchSize, self.crop_size[0], self.crop_size[1], 3])
+
+        labels = np.zeros([self.batchSize],dtype='int')
+        ims = []
+
+        ctr = 0
+        for cls in classes:
+            cls = int(cls)
+            clsPaths = self.classes[cls]['ims']
+            random.shuffle(clsPaths)
+
+            for j1 in np.arange(self.num_pos):
+                imPath = clsPaths[j1]
+                img = self.getProcessedImage(imPath)
+                if img is not None:
+                    batch[ctr,:,:,:] = img
+                labels[ctr] = cls
+                ims.append(imPath)
+                ctr += 1
+
+        return batch, labels, ims
