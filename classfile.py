@@ -39,6 +39,8 @@ class CombinatorialTripletSet:
         # this is SUPER hacky -- if the test file is 'occluded' then the class is in the 5th position, not the 4th
         if 'occluded' in image_list:
             clsPos = 4
+        else if 'mnist' in image_list:
+            clsPos = 6
         else:
             clsPos = 3
 
@@ -197,6 +199,8 @@ class NonTripletSet:
         # this is SUPER hacky -- if the test file is 'occluded' then the class is in the 5th position, not the 4th
         if 'occluded' in image_list:
             clsPos = 4
+        else if 'mnist' in image_list:
+            clsPos = 6
         else:
             clsPos = 3
 
