@@ -732,7 +732,7 @@ class CombinatorialTripletSet_generic(CombinatorialTripletSet):
             clsPaths = self.classes[cls]['ims']
             random.shuffle(clsPaths)
 
-            for j1 in np.arange(self.num_pos):
+            for j1 in np.arange(self.numPos):
                 imPath = clsPaths[j1]
                 img = self.getProcessedImage(imPath)
                 if img is not None:
