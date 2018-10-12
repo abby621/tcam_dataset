@@ -69,7 +69,7 @@ class CombinatorialTripletSet:
         ims = []
 
         ctr = 0
-        start = time.time()
+        start_time = time.time()
         for cls in classes:
             cls = int(cls)
             clsPaths = self.hotels[cls]['ims']
