@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 # python tc_finetune_doctoring.py margin batch_size output_size learning_rate whichGPU is_finetuning pretrained_net
-# chop off last layer: python tc_finetune_doctoring.py .3 120 256 .0001 1 True './models/ilsvrc2012.ckpt'
+# chop off last layer: python tc_finetune_doctoring.py .3 120 256 .0001 0 True './models/ilsvrc2012.ckpt'
 # don't chop off last layer: python tc_finetune_doctoring.py .3 120 256 .0001 3 False './models/ilsvrc2012.ckpt'
 """
 
@@ -276,7 +276,7 @@ def main(margin,batch_size,output_size,learning_rate,whichGPU,is_finetuning,pret
     ctr  = 0
     for step in range(num_iters):
         start_time = time.time()
-        batch, hotels, chains, ims = train_data.getBatch()
+        batch, hotels, ims = train_data.getBatch()
         people_masks = train_data.getPeopleMasks()
         batch_time = time.time() - start_time
         start_time = time.time()
