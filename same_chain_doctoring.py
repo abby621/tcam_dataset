@@ -295,7 +295,7 @@ def main(fraction_same_chain,same_chain_margin,diff_chain_margin,batch_size,outp
     ctr  = 0
     for step in range(num_iters):
         start_time = time.time()
-        batch, hotels, ims = train_data.getBatch()
+        batch, hotels, chains, ims = train_data.getBatch()
         people_masks = train_data.getPeopleMasks()
         batch_time = time.time() - start_time
         start_time = time.time()
