@@ -89,7 +89,10 @@ def main(margin,batch_size,output_size,learning_rate,whichGPU,is_finetuning,pret
     print '------------'
 
     # Queuing op loads data into input tensor
-    image_batch = tf.placeholder(tf.float32, shape=[batch_size, crop_size[0], crop_size[0], 3])
+    repMeanIm = np.tile(np.expand_dims(train_data.meanImage,0),[batch_size,1,1,1])
+    # this is dumb, but in the non-doctored case we subtract off the mean in the batch generation. here we want to do it after the data augmentation
+    image_batch_mean_subtracted = tf.placeholder(tf.float32, shape=[batch_size, crop_size[0], crop_size[0], 3])
+    image_batch = tf.add(image_batch_mean_subtracted,repMeanIm)
     label_batch = tf.placeholder(tf.int32, shape=[batch_size])
     people_mask_batch = tf.placeholder(tf.float32, shape=[batch_size, crop_size[0], crop_size[0], 1])
 
@@ -199,7 +202,7 @@ def main(margin,batch_size,output_size,learning_rate,whichGPU,is_finetuning,pret
     masked_batch = tf.multiply(masked_masks,filtered_batch)
 
     noise = tf.random_normal(shape=[batch_size, crop_size[0], crop_size[0], 1], mean=0.0, stddev=0.0025, dtype=tf.float32)
-    final_batch = tf.add(masked_batch,noise)
+    final_batch = tf.add(tf.subtract(masked_batch,repMeanIm),noise)
 
     print("Preparing network...")
     with slim.arg_scope(resnet_v2.resnet_arg_scope()):
@@ -213,8 +216,35 @@ def main(margin,batch_size,output_size,learning_rate,whichGPU,is_finetuning,pret
         if not excluded:
             variables_to_restore.append(var)
 
-    feat = tf.squeeze(tf.nn.l2_normalize(layers[featLayer],3))
-    loss = batch_all_triplet_loss(label_batch, feat, margin, squared=False)
+    # feat = tf.squeeze(tf.nn.l2_normalize(layers[featLayer],3))
+    posIdx = np.floor(np.arange(0,batch_size)/num_pos_examples).astype('int')
+    posIdx10 = num_pos_examples*posIdx
+    posImInds = np.tile(posIdx10,(num_pos_examples,1)).transpose()+np.tile(np.arange(0,num_pos_examples),(batch_size,1))
+    anchorInds = np.tile(np.arange(0,batch_size),(num_pos_examples,1)).transpose()
+    posImInds_flat = posImInds.ravel()
+    anchorInds_flat = anchorInds.ravel()
+    posPairInds = zip(posImInds_flat,anchorInds_flat)
+    ra, rb, rc = np.meshgrid(np.arange(0,batch_size),np.arange(0,batch_size),np.arange(0,num_pos_examples))
+    bad_negatives = np.floor((ra)/num_pos_examples) == np.floor((rb)/num_pos_examples)
+    bad_positives = np.mod(rb,num_pos_examples) == np.mod(rc,num_pos_examples)
+    same_class_mask = ((1-bad_negatives)*(1-bad_positives)).astype('float32')
+
+    # feat = tf.squeeze(tf.nn.l2_normalize(layers[featLayer],3))
+    feat = tf.squeeze(layers[featLayer])
+    expanded_a = tf.expand_dims(feat, 1)
+    expanded_b = tf.expand_dims(feat, 0)
+    D = tf.reduce_sum(tf.squared_difference(expanded_a, expanded_b), 2)
+    # D = 1 - tf.reduce_sum(tf.multiply(expanded_a, expanded_b), 2)
+
+    posDists = tf.reshape(tf.gather_nd(D,posPairInds),(batch_size,num_pos_examples))
+    shiftPosDists = tf.reshape(posDists,(1,batch_size,num_pos_examples))
+    posDistsRep = tf.tile(shiftPosDists,(batch_size,1,1))
+    allDists = tf.tile(tf.expand_dims(D,2),(1,1,num_pos_examples))
+
+    all_loss = tf.maximum(0.,tf.multiply(same_class_mask,posDistsRep - allDists + margin))
+    non_zero_mask = tf.greater(all_loss, 0)
+    non_zero_array = tf.boolean_mask(all_loss, non_zero_mask)
+    loss = tf.reduce_sum(all_loss)/(batch_size*batch_size*num_pos_examples)
 
     # slightly counterintuitive to not define "init_op" first, but tf vars aren't known until added to graph
     update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
@@ -246,13 +276,17 @@ def main(margin,batch_size,output_size,learning_rate,whichGPU,is_finetuning,pret
     ctr  = 0
     for step in range(num_iters):
         start_time = time.time()
-        batch, labels, ims = train_data.getBatch()
+        batch, hotels, chains, ims = train_data.getBatch()
         people_masks = train_data.getPeopleMasks()
-        _, loss_val = sess.run([train_op, loss], feed_dict={image_batch: batch, label_batch:labels, people_mask_batch: people_masks})
+        batch_time = time.time() - start_time
+        start_time = time.time()
+        _, fb, loss_val = sess.run([train_op, masked_batch, loss], feed_dict={image_batch_mean_subtracted: batch,label_batch:hotels, people_mask_batch: people_masks})
         end_time = time.time()
         duration = end_time-start_time
-        out_str = 'Step %d: loss = %.6f -- (%.3f sec)' % (step, loss_val,duration)
+        out_str = 'Step %d: loss = %.6f (batch creation: %.3f | training: %.3f sec)' % (step, loss_val, batch_time,duration)
         # print(out_str)
+        if step == 0:
+            np.save(os.path.join(log_dir,'checkpoint-'+param_str+'_example_batch.npy'),fb)
         if step % summary_iters == 0:
             print(out_str)
             train_log_file.write(out_str+'\n')
