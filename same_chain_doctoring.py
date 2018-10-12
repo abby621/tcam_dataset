@@ -1,6 +1,6 @@
 """
 # python same_chain_doctoring.py fraction_same_chain same_chain_margin diff_chain_margin batch_size output_size learning_rate whichGPU is_finetuning is_overfitting pretrained_net
-# overfitting: python same_chain_doctoring.py .5 .2 .4 120 256 .0001 1 False True None
+# overfitting: python same_chain_doctoring.py .5 .2 .4 120 1001 .0001 1 True True './models/ilsvrc2012.ckpt'
 # chop off last layer: python same_chain_doctoring.py .5 .2 .4 120 256 .0001 3 True False './models/ilsvrc2012.ckpt'
 # don't chop off last layer: python same_chain_doctoring.py .5 .2 .4 120 256 .0001 1 False False './models/ilsvrc2012.ckpt'
 # don't chop off last layer + more of the same chain: python same_chain_doctoring.py .75 .3 .5 120 256 .0001 1 False False './output/sameChain/no_doctoring/ckpts/checkpoint-2018_09_30_0809_lr1e-05_outputSz256_margin0pt4-38614'
@@ -244,11 +244,12 @@ def main(fraction_same_chain,same_chain_margin,diff_chain_margin,batch_size,outp
     chain_based_margin[:] = margin
     chain_based_margin[:int(float(batch_size)*fraction_same_chain),:int(float(batch_size)*fraction_same_chain),:] = same_chain_margin
 
-    feat = tf.squeeze(tf.nn.l2_normalize(layers[featLayer],3))
+    # feat = tf.squeeze(tf.nn.l2_normalize(layers[featLayer],3))
+    feat = tf.squeeze(layers[featLayer])
     expanded_a = tf.expand_dims(feat, 1)
     expanded_b = tf.expand_dims(feat, 0)
-    #D = tf.reduce_sum(tf.squared_difference(expanded_a, expanded_b), 2)
-    D = 1 - tf.reduce_sum(tf.multiply(expanded_a, expanded_b), 2)
+    D = tf.reduce_sum(tf.squared_difference(expanded_a, expanded_b), 2)
+    # D = 1 - tf.reduce_sum(tf.multiply(expanded_a, expanded_b), 2)
 
     posDists = tf.reshape(tf.gather_nd(D,posPairInds),(batch_size,num_pos_examples))
     shiftPosDists = tf.reshape(posDists,(1,batch_size,num_pos_examples))
