@@ -64,9 +64,6 @@ class CombinatorialTripletSet:
     def getBatch(self):
         numClasses = self.batchSize/self.numPos # need to handle the case where we need more classes than we have?
         classes = np.random.choice(self.hotels.keys(),numClasses,replace=False)
-
-        batch = np.zeros([self.batchSize, self.crop_size[0], self.crop_size[1], 3])
-
         labels = np.zeros([self.batchSize],dtype='int')
         ims = []
 
@@ -92,21 +89,17 @@ class CombinatorialTripletSet:
 
             for j1 in np.arange(numTcam):
                 imPath = self.hotels[cls]['ims'][tcamInds[j1]]
-                img = self.getProcessedImage(imPath)
-                if img is not None:
-                    batch[ctr,:,:,:] = img
                 labels[ctr] = cls
                 ims.append(imPath)
                 ctr += 1
 
             for j2 in np.arange(numEx):
                 imPath = self.hotels[cls]['ims'][exInds[j2]]
-                img = self.getProcessedImage(imPath)
-                if img is not None:
-                    batch[ctr,:,:,:] = img
                 labels[ctr] = cls
                 ims.append(imPath)
                 ctr += 1
+
+        batch = self.getProcessedImages(ims)
 
         return batch, labels, ims
 
@@ -141,6 +134,23 @@ class CombinatorialTripletSet:
         img = img - self.meanImage
 
         return img
+
+    def getProcessedImages(self,ims):
+        numIms = len(ims)
+        imgs = np.array([cv2.resize(cv2.imread(image_file),(self.image_size[0], self.image_size[1])) for image_file in ims])
+
+        if self.isTraining and not self.isOverfitting and random.random() > 0.5:
+            imgs = np.array([cv2.flip(img,1) if random.random() > 0.5 else img for img in imgs])
+
+        if self.isTraining and not self.isOverfitting:
+            top = np.random.randint(0,self.image_size[0] - self.crop_size[0],numIms)
+            left = np.random.randint(0,self.image_size[1] - self.crop_size[1],numIms)
+        else:
+            top = int(round((self.image_size[0] - self.crop_size[0])/2))
+            left = int(round((self.image_size[1] - self.crop_size[1])/2))
+
+        imgs = np.array([imgs[ix,top[ix]:(top[ix]+self.crop_size[0]),left[ix]:(left[ix]+self.crop_size[1]),:]-self.meanImage for ix in range(numIms)])
+        return imgs
 
     def getPeopleMasks(self):
         which_inds = random.sample(np.arange(0,len(self.people_crop_files)),self.batchSize)
@@ -376,23 +386,6 @@ class SameChainSet(CombinatorialTripletSet):
         batch = self.getProcessedImages(ims)
         chains = [c for c in chains for ix in range(self.numPos)]
         return batch, labels, chains, ims
-
-    def getProcessedImages(self,ims):
-        numIms = len(ims)
-        imgs = np.array([cv2.resize(cv2.imread(image_file),(self.image_size[0], self.image_size[1])) for image_file in ims])
-
-        if self.isTraining and not self.isOverfitting and random.random() > 0.5:
-            imgs = np.array([cv2.flip(img,1) if random.random() > 0.5 else img for img in imgs])
-
-        if self.isTraining and not self.isOverfitting:
-            top = np.random.randint(0,self.image_size[0] - self.crop_size[0],numIms)
-            left = np.random.randint(0,self.image_size[1] - self.crop_size[1],numIms)
-        else:
-            top = int(round((self.image_size[0] - self.crop_size[0])/2))
-            left = int(round((self.image_size[1] - self.crop_size[1])/2))
-
-        imgs = np.array([imgs[ix,top[ix]:(top[ix]+self.crop_size[0]),left[ix]:(left[ix]+self.crop_size[1]),:]-self.meanImage for ix in range(numIms)])
-        return imgs
 
 class SameChainNpairs(SameChainSet):
     def __init__(self, image_list, class_to_chain_mapping, mean_file, image_size, crop_size, batchSize=100, isTraining=True, isOverfitting=False,fractionSameChain=0.5,randomizeChainFraction=False):
@@ -782,7 +775,5 @@ class NonTripletSet_generic(NonTripletSet):
             cls = int(temp[0].split('/')[clsPos])
             self.classes[cls] = {}
             self.classes[cls]['ims'] = temp
-        for cls in self.classes.keys():
-            self.classes[cls]['sources'] = np.array([im.split('/')[clsPos+1] for im in self.classes[cls]['ims']])
 
         self.people_crop_files = glob.glob(os.path.join(peopleDir,'*.png'))
