@@ -104,7 +104,11 @@ def main(fraction_same_chain,same_chain_margin,diff_chain_margin,batch_size,outp
     print '------------'
 
     # Queuing op loads data into input tensor
-    image_batch = tf.placeholder(tf.float32, shape=[batch_size, crop_size[0], crop_size[0], 3])
+    repMeanIm = np.tile(np.expand_dims(train_data.meanImage,0),[batch_size,1,1,1])
+    # this is dumb, but in the non-doctored case we subtract off the mean in the batch generation. here we want to do it after the data augmentation
+    image_batch_mean_subtracted = tf.placeholder(tf.float32, shape=[batch_size, crop_size[0], crop_size[0], 3])
+    image_batch = tf.add(image_batch_mean_subtracted,repMeanIm)
+    label_batch = tf.placeholder(tf.int32, shape=[batch_size])
     people_mask_batch = tf.placeholder(tf.float32, shape=[batch_size, crop_size[0], crop_size[0], 1])
 
     # doctor image params
@@ -213,7 +217,7 @@ def main(fraction_same_chain,same_chain_margin,diff_chain_margin,batch_size,outp
     masked_batch = tf.multiply(masked_masks,filtered_batch)
 
     noise = tf.random_normal(shape=[batch_size, crop_size[0], crop_size[0], 1], mean=0.0, stddev=0.0025, dtype=tf.float32)
-    final_batch = tf.add(masked_batch,noise)
+    final_batch = tf.add(tf.subtract(masked_batch,repMeanIm),noise)
 
     print("Preparing network...")
     with slim.arg_scope(resnet_v2.resnet_arg_scope()):
@@ -291,16 +295,18 @@ def main(fraction_same_chain,same_chain_margin,diff_chain_margin,batch_size,outp
     ctr  = 0
     for step in range(num_iters):
         start_time = time.time()
-        batch, labels, chains, ims = train_data.getBatch()
+        batch, hotels, ims = train_data.getBatch()
         people_masks = train_data.getPeopleMasks()
         batch_time = time.time() - start_time
         start_time = time.time()
-        _, nza, loss_val = sess.run([train_op,non_zero_array, loss], feed_dict={image_batch: batch, people_mask_batch:people_masks})
+        _, fb, loss_val = sess.run([train_op, masked_batch, loss], feed_dict={image_batch_mean_subtracted: batch,label_batch:hotels, people_mask_batch: people_masks})
         end_time = time.time()
         duration = end_time-start_time
-        out_str = 'Step %d: loss = %.6f | non-zero triplets: %d -- (batch creation: %.3f | training: %.3f sec)' % (step, loss_val, nza.shape[0], batch_time,duration)
+        out_str = 'Step %d: loss = %.6f (batch creation: %.3f | training: %.3f sec)' % (step, loss_val, batch_time,duration)
         # print(out_str)
-        if step % summary_iters == 0:
+        if step == 0:
+            np.save(os.path.join(log_dir,'checkpoint-'+param_str+'_example_batch.npy'),fb)
+        if step % summary_iters == 0 or is_overfitting.lower()=='true':
             print(out_str)
             train_log_file.write(out_str+'\n')
         # Update the events file.
