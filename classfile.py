@@ -11,6 +11,7 @@ import random
 import os
 import glob
 import socket
+import time
 
 peopleDir = './images/people_crops/train/'
 
@@ -68,6 +69,7 @@ class CombinatorialTripletSet:
         ims = []
 
         ctr = 0
+        start = time.time()
         for cls in classes:
             cls = int(cls)
             clsPaths = self.hotels[cls]['ims']
@@ -98,8 +100,13 @@ class CombinatorialTripletSet:
                 labels[ctr] = cls
                 ims.append(imPath)
                 ctr += 1
+        end_time = time.time()
+        print 'Label generation: ', end_time-start_time
 
+        start_time = time.time()
         batch = self.getProcessedImages(ims)
+        end_time = time.time()
+        print 'Image reading: ',end_time-start_time
 
         return batch, labels, ims
 
