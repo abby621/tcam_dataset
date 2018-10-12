@@ -1,7 +1,7 @@
 """
 # python same_chain_doctoring.py fraction_same_chain batch_size output_size learning_rate whichGPU is_finetuning is_overfitting pretrained_net
 # overfitting: python same_chain_doctoring_npairs.py .5 30 256 .0001 1 False True None
-# chop off last layer: python same_chain_doctoring_npairs.py .5 120 256 .0005 1 True False './output/npairs/no_doctoring/ckpts/checkpoint-2018_10_04_0905_lr0pt0001_outputSz256-34999'
+# chop off last layer: python same_chain_doctoring_npairs.py .5 120 256 .0005 2 True False './output/npairs/no_doctoring/ckpts/checkpoint-2018_10_04_0905_lr0pt0001_outputSz256-34999'
 # don't chop off last layer: python same_chain_doctoring_npairs.py .5 120 256 .0001 2 False False './models/ilsvrc2012.ckpt'
 # don't chop off last layer + switch to more of the same chain: python same_chain_doctoring_npairs.py .75 120 256 .0001 2 False False './output/sameChain/no_doctoring/ckpts/checkpoint-2018_09_30_0809_lr1e-05_outputSz256_margin0pt4-38614'
 """
@@ -38,8 +38,8 @@ def main(fraction_same_chain,batch_size,output_size,learning_rate,whichGPU,is_fi
 
     signal.signal(signal.SIGINT, handler)
 
-    ckpt_dir = './output/sameChain/npairs/no_doctoring/ckpts'
-    log_dir = './output/sameChain/npairs/no_doctoring/logs'
+    ckpt_dir = './output/sameChain/npairs/doctoring/ckpts'
+    log_dir = './output/sameChain/npairs/doctoring/logs'
     train_filename = './input/train_by_hotel.txt'
 
     jsonTrainData = json.load(open('./input/train_set.json'))
