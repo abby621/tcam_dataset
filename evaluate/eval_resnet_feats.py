@@ -76,7 +76,7 @@ def main(pretrained_net,whichGPU):
         save_h5('top_k',top_k,'f',os.path.join(test_output_dir,'top_k.h5'))
         save_h5('average_accuracy',average_accuracy,'f',os.path.join(test_output_dir,'average_accuracy.h5'))
         # print iterStr, test_name, average_accuracy[0], average_accuracy[9], average_accuracy[99]
-        print '%d, %s, %0.2f, %0.2f, %0.2f' % (iterStr, test_name, 100.*average_accuracy[0], 100.*average_accuracy[9], 100.*average_accuracy[99])
+        print '%s, %s, %0.2f, %0.2f, %0.2f' % (iterStr, test_name, 100.*average_accuracy[0], 100.*average_accuracy[9], 100.*average_accuracy[99])
 
     import json
     jsonTestData = json.load(open('./input/test_set.json'))
@@ -141,7 +141,7 @@ def main(pretrained_net,whichGPU):
         save_h5('top_k',top_k,'f',os.path.join(test_output_dir,'top_k.h5'))
         save_h5('average_accuracy',average_accuracy,'f',os.path.join(test_output_dir,'average_accuracy.h5'))
         # print iterStr, test_name, average_accuracy[0], average_accuracy[2], average_accuracy[4], average_accuracy[9]
-        print '%d, %s, %0.2f, %0.2f, %0.2f, %0.2f' % (iterStr, test_name, 100.*average_accuracy[0], 100.*average_accuracy[2], 100.*average_accuracy[4], 100.*average_accuracy[9])
+        print '%s, %s, %0.2f, %0.2f, %0.2f, %0.2f' % (iterStr, test_name, 100.*average_accuracy[0], 100.*average_accuracy[2], 100.*average_accuracy[4], 100.*average_accuracy[9])
 
 if __name__ == "__main__":
     args = sys.argv
