@@ -31,7 +31,7 @@ def main(pretrained_net, whichGPU):
     img_size = [256, 256]
     crop_size = [224, 224]
     batch_size = 100
-    output_size = 128
+    output_size = 256
 
     # Create test_data "batcher"
     #train_data = CombinatorialTripletSet(train_file, mean_file, img_size, crop_size, batch_size, num_pos_examples,isTraining=False)
