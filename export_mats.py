@@ -20,9 +20,9 @@ def main(pretrained_net, whichGPU):
         outMatFolder = os.path.join('/'.join(splitStr[:np.where(np.array(splitStr)=='ckpts')[0][0]]),'results_small',iterStr,'mats')
     else:
         iterStr = 'ilsvrc2012'
-        outMatFolder = os.path.join('./output/ilsvrc2012/results_small',iterStr,'mats')
+        outMatFolder = os.path.join('./output/ilsvrc2012/results_small/train/',iterStr,'mats')
 
-    test_file = os.path.join('./input/test/small_test_by_hotel.txt')
+    test_file = os.path.join('./input/test/small_train_by_hotel.txt')
     mean_file = os.path.join('./input/meanIm.npy')
 
     if not os.path.exists(outMatFolder):
