@@ -37,14 +37,11 @@ def main(pretrained_net, whichGPU):
     #train_data = CombinatorialTripletSet(train_file, mean_file, img_size, crop_size, batch_size, num_pos_examples,isTraining=False)
     test_data = NonTripletSet(test_file, mean_file, img_size, crop_size, batch_size,isTraining=False)
 
-    image_batch = tf.placeholder(tf.float32, shape=[batch_size, crop_size[0], crop_size[0], 3])
-    repMeanIm = np.tile(np.expand_dims(test_data.meanImage,0),[batch_size,1,1,1])
-    final_batch = tf.subtract(image_batch,repMeanIm)
-    label_batch = tf.placeholder(tf.int32, shape=(batch_size))
+    image_batch = tf.placeholder(tf.float32, shape=[?, crop_size[0], crop_size[0], 3])
 
     print("Preparing network...")
     with slim.arg_scope(resnet_v2.resnet_arg_scope()):
-        _, layers = resnet_v2.resnet_v2_50(final_batch, num_classes=output_size, is_training=False)
+        _, layers = resnet_v2.resnet_v2_50(image_batch, num_classes=output_size, is_training=False)
 
     featLayer = 'resnet_v2_50/logits'
     non_norm_feat = tf.squeeze(layers[featLayer])
