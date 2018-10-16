@@ -60,6 +60,7 @@ def main(pretrained_net, whichGPU):
     ims_and_labels_path = os.path.join(outMatFolder,'ims_and_labels.pkl')
     if not os.path.exists(ims_and_labels_path):
         testingImsAndLabels = [(i,h) for h in test_data.hotels.keys() for i in test_data.hotels[h]['ims']]
+        numTestingIms = len(testingImsAndLabels)
         with open(ims_and_labels_path, 'wb') as fp:
             pickle.dump(testingImsAndLabels, fp)
     else:
