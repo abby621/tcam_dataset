@@ -93,7 +93,7 @@ def main(pretrained_net, whichGPU):
         batch = test_data.getBatchFromImageList(ims)
         testingLabels[idx:idx+batch_size] = labels
         testingIms[idx:idx+batch_size] = ims
-        ff, gg, cvOut1, cvOut2, cvOut3, cvOut4, wgts, bs = sess.run([non_norm_feat,gap,conv1,conv2,conv3,conv4,weights,biases], feed_dict={image_batch: batch, label_batch:labels})
+        ff, gg, cvOut1, cvOut2, cvOut3, cvOut4, wgts, bs = sess.run([non_norm_feat,gap,conv1,conv2,conv3,conv4,weights,biases], feed_dict={image_batch: batch})
         testingFeats[idx:idx+ff.shape[0],:] = np.squeeze(ff)
         testingGAP[idx:idx+ff.shape[0],:] = np.squeeze(gg)
         testingCV1[idx:idx+ff.shape[0],:,:] = cvOut1.reshape((cvOut1.shape[0],cvOut1.shape[1]*cvOut1.shape[2],cvOut1.shape[3]))
