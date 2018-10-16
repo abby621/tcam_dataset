@@ -37,7 +37,7 @@ def main(pretrained_net, whichGPU):
     #train_data = CombinatorialTripletSet(train_file, mean_file, img_size, crop_size, batch_size, num_pos_examples,isTraining=False)
     test_data = NonTripletSet(test_file, mean_file, img_size, crop_size, batch_size,isTraining=False)
 
-    image_batch = tf.placeholder(tf.float32, shape=[?, crop_size[0], crop_size[0], 3])
+    image_batch = tf.placeholder(tf.float32, shape=[None, crop_size[0], crop_size[0], 3])
 
     print("Preparing network...")
     with slim.arg_scope(resnet_v2.resnet_arg_scope()):
