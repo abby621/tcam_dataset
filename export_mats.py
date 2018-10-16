@@ -17,7 +17,7 @@ def main(pretrained_net, whichGPU):
     if not 'ilsvrc2012' in pretrained_net:
         iterStr = pretrained_net.split('-')[-1]
         splitStr = pretrained_net.split('/')
-        outMatFolder = os.path.join('/'.join(splitStr[:np.where(np.array(splitStr)=='ckpts')[0][0]]),'results_small',iterStr)
+        outMatFolder = os.path.join('/'.join(splitStr[:np.where(np.array(splitStr)=='ckpts')[0][0]]),'results_small',iterStr,'mats')
     else:
         iterStr = 'ilsvrc2012'
         outMatFolder = os.path.join('./output/ilsvrc2012/results_small',iterStr,'mats')
