@@ -75,7 +75,7 @@ def main(pretrained_net, whichGPU):
 
     saver.restore(sess, pretrained_net)
 
-    testingFeats = np.empty((numTestingIms,feat.shape[1]),dtype=np.float32)
+    testingFeats = np.empty((numTestingIms,output_size),dtype=np.float32)
     testingCV1 = np.empty((numTestingIms,conv1.shape[1]*conv1.shape[2],conv1.shape[3]),dtype=np.float32)
     testingCV2 = np.empty((numTestingIms,conv2.shape[1]*conv2.shape[2],conv2.shape[3]),dtype=np.float32)
     testingCV3 = np.empty((numTestingIms,conv3.shape[1]*conv3.shape[2],conv3.shape[3]),dtype=np.float32)
