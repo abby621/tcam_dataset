@@ -1,4 +1,4 @@
-# python export_mats.py traffickcam 3 True
+# python export_mats.py './output/doctoring/ckpts/checkpoint-2018_08_28_2136_tcam_with_doctoring_lr0pt0001_outputSz256_margin0pt3-70841' 0
 import tensorflow as tf
 from classfile import NonTripletSet
 import os, random, time
@@ -22,7 +22,7 @@ def main(pretrained_net, whichGPU):
         iterStr = 'ilsvrc2012'
         outMatFolder = os.path.join('./output/ilsvrc2012/results_small',iterStr,'mats')
 
-    test_file = os.path.join('./input/test/test_by_hotel.txt')
+    test_file = os.path.join('./input/test/small_test_by_hotel.txt')
     mean_file = os.path.join('./input/meanIm.npy')
 
     if not os.path.exists(outMatFolder):
