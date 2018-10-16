@@ -37,7 +37,7 @@ def main(pretrained_net, whichGPU):
     #train_data = CombinatorialTripletSet(train_file, mean_file, img_size, crop_size, batch_size, num_pos_examples,isTraining=False)
     test_data = NonTripletSet(test_file, mean_file, img_size, crop_size, batch_size,isTraining=False)
 
-    image_batch = tf.placeholder(tf.float32, shape=[None, crop_size[0], crop_size[0], 3])
+    image_batch = tf.placeholder(tf.float32, shape=[batch_size, crop_size[0], crop_size[0], 3])
 
     print("Preparing network...")
     with slim.arg_scope(resnet_v2.resnet_arg_scope()):
@@ -57,6 +57,8 @@ def main(pretrained_net, whichGPU):
     ims_and_labels_path = os.path.join(outMatFolder,'ims_and_labels.pkl')
     if not os.path.exists(ims_and_labels_path):
         testingImsAndLabels = [(i,h) for h in test_data.hotels.keys() for i in test_data.hotels[h]['ims']]
+        numTestingIms = batch_size*(len(testingImsAndLabels)/batch_size)
+        testingImsAndLabels = testingImsAndLabels[:numTestingIms]
         numTestingIms = len(testingImsAndLabels)
         with open(ims_and_labels_path, 'wb') as fp:
             pickle.dump(testingImsAndLabels, fp)
