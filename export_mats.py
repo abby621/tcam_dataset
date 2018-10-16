@@ -22,7 +22,7 @@ def main(pretrained_net, whichGPU):
         iterStr = 'ilsvrc2012'
         outMatFolder = os.path.join('./output/ilsvrc2012/results_small/train/',iterStr,'mats')
 
-    test_file = os.path.join('./input/test/small_train_by_hotel.txt')
+    test_file = os.path.join('./input/small_train_by_hotel.txt')
     mean_file = os.path.join('./input/meanIm.npy')
 
     if not os.path.exists(outMatFolder):
