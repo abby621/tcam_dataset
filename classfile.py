@@ -191,7 +191,7 @@ class CombinatorialTripletSet:
 
         return new_img
 
-class NonTripletSet:
+class NonTripletSet(CombinatorialTripletSet):
     def __init__(self, image_list, mean_file, image_size, crop_size, batchSize=100, num_pos=10, isTraining=True, isOverfitting=False):
         self.image_size = image_size
         self.crop_size = crop_size
@@ -255,29 +255,6 @@ class NonTripletSet:
             img = self.getProcessedImage(image_list[ix])
             batch[ix,:,:,:] = img
         return batch
-
-    def getProcessedImage(self, image_file):
-        img = cv2.imread(image_file)
-        if img is None:
-            return None
-
-        if self.isTraining and not self.isOverfitting and random.random() > 0.5:
-            img = cv2.flip(img,1)
-
-        # if self.isTraining:
-        #     img = doctor_im(img)
-
-        img = cv2.resize(img, (self.image_size[0], self.image_size[1]))
-
-        if self.isTraining and not self.isOverfitting:
-            top = np.random.randint(self.image_size[0] - self.crop_size[0])
-            left = np.random.randint(self.image_size[1] - self.crop_size[1])
-        else:
-            top = int(round((self.image_size[0] - self.crop_size[0])/2))
-            left = int(round((self.image_size[1] - self.crop_size[1])/2))
-
-        img = img[top:(top+self.crop_size[0]),left:(left+self.crop_size[1]),:]
-        img = img - self.meanImage
 
         return img
 
