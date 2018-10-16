@@ -93,13 +93,7 @@ def main(pretrained_net, whichGPU):
         labels = [i[1] for i in il]
         batch = test_data.getBatchFromImageList(ims)
         testingLabels[idx:idx+batch_size] = labels
-        new_ims = []
-        for im,cls in zip(ims,labels):
-            imdir = os.path.join(outImDir,str(cls))
-            new_path=os.path.join(imdir,im.split('/')[-1])
-            new_ims.append(new_path)
-
-        testingIms[idx:idx+batch_size] = new_ims
+        testingIms[idx:idx+batch_size] = ims
         ff, gg, cvOut1, cvOut2, cvOut3, cvOut4, wgts, bs = sess.run([non_norm_feat,gap,conv1,conv2,conv3,conv4,weights,biases], feed_dict={image_batch: batch, label_batch:labels})
         testingFeats[idx:idx+ff.shape[0],:] = np.squeeze(ff)
         testingGAP[idx:idx+ff.shape[0],:] = np.squeeze(gg)
