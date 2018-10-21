@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 # python expedia_finetune.py margin batch_size output_size learning_rate whichGPU is_finetuning pretrained_net
-# chop off last layer: python expedia_finetune.py .3 120 256 .0001 2 True './models/ilsvrc.ckpt'
-# don't chop off last layer: python expedia_finetune.py .3 120 256 .0001 2 False './models/ilsvrc.ckpt'
+# chop off last layer: python expedia_finetune.py .3 120 256 .0001 2 True './models/ilsvrc2012.ckpt'
+# don't chop off last layer: python expedia_finetune.py .3 120 256 .0001 2 False './models/ilsvrc2012.ckpt'
 """
 
 import tensorflow as tf
@@ -104,11 +104,12 @@ def main(margin,batch_size,output_size,learning_rate,whichGPU,is_finetuning,pret
         if not excluded:
             variables_to_restore.append(var)
 
-    feat = tf.squeeze(tf.nn.l2_normalize(layers[featLayer],3))
+    # feat = tf.squeeze(tf.nn.l2_normalize(layers[featLayer],3))
+    feat = tf.squeeze(layers[featLayer])
     expanded_a = tf.expand_dims(feat, 1)
     expanded_b = tf.expand_dims(feat, 0)
-    #D = tf.reduce_sum(tf.squared_difference(expanded_a, expanded_b), 2)
-    D = 1 - tf.reduce_sum(tf.multiply(expanded_a, expanded_b), 2)
+    D = tf.reduce_sum(tf.squared_difference(expanded_a, expanded_b), 2)
+    # D = 1 - tf.reduce_sum(tf.multiply(expanded_a, expanded_b), 2)
 
     # if not train_data.isOverfitting:
     #     D_max = tf.reduce_max(D)
