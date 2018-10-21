@@ -1,4 +1,4 @@
-="""
+"""
 # expedia: python evaluate/save_resnet_features.py 0 ./output/expedia/ckpts/checkpoint-2018_09_19_1314_lr0pt0001_outputSz256_margin0pt3-74157
 # no doctoring: python evaluate/save_resnet_features.py 0 ./output/no_doctoring/ckpts/checkpoint-2018_09_19_0913_lr0pt0001_outputSz256_margin0pt3-75721
 # doctoring: python evaluate/save_resnet_features.py 2 ./output/doctoring/ckpts/checkpoint-2018_08_28_2136_tcam_with_doctoring_lr0pt0001_outputSz256_margin0pt3-19999
