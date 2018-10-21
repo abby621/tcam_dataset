@@ -26,14 +26,14 @@ def load_h5(data_description,path):
     return data
 
 def main(pretrained_net,whichGPU):
-    train_dataset = './input/train_by_hotel.txt'
+    train_dataset = './input/small_train_by_hotel.txt'
     if not 'ilsvrc2012' in pretrained_net:
         iterStr = pretrained_net.split('-')[-1]
         splitStr = pretrained_net.split('/')
-        output_dir = os.path.join('/'.join(splitStr[:np.where(np.array(splitStr)=='ckpts')[0][0]]),'results',iterStr)
+        output_dir = os.path.join('/'.join(splitStr[:np.where(np.array(splitStr)=='ckpts')[0][0]]),'results_small',iterStr)
     else:
         iterStr = 'ilsvrc2012'
-        output_dir = os.path.join('./output/ilsvrc2012/results',iterStr)
+        output_dir = os.path.join('./output/ilsvrc2012/results_small',iterStr)
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
 
@@ -83,7 +83,7 @@ def main(pretrained_net,whichGPU):
     save_h5('train_classes',train_classes,'i8',os.path.join(output_dir,'trainClasses.h5'))
     save_h5('train_feats',train_feats,'f',os.path.join(output_dir,'trainFeats.h5'))
 
-    test_datasets = ['./input/test/test_by_hotel.txt','./input/occluded_test/by_hotel/0.txt','./input/occluded_test/by_hotel/1.txt','./input/occluded_test/by_hotel/2.txt','./input/occluded_test/by_hotel/3.txt','./input/test/test_by_chain.txt','./input/occluded_test/by_chain/0.txt','./input/occluded_test/by_chain/1.txt','./input/occluded_test/by_chain/2.txt','./input/occluded_test/by_chain/3.txt']
+    test_datasets = ['./input/test/small_test_by_hotel.txt','./input/occluded_test_small/by_hotel/0.txt','./input/occluded_test_small/by_hotel/1.txt','./input/occluded_test_small/by_hotel/2.txt','./input/occluded_test_small/by_hotel/3.txt','./input/test/small_test_by_chain.txt','./input/occluded_test_small/by_chain/0.txt','./input/occluded_test_small/by_chain/1.txt','./input/occluded_test_small/by_chain/2.txt','./input/occluded_test_small/by_chain/3.txt']
     test_names = ['by_hotel','occluded0','occluded1','occluded2','occluded3','by_chain','by_chain_occluded0','by_chain_occluded1','by_chain_occluded2','by_chain_occluded3']
     for test_dataset, test_name in zip(test_datasets,test_names):
         test_output_dir = os.path.join(output_dir,test_name)
