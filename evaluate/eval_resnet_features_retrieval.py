@@ -93,8 +93,8 @@ def main(pretrained_net,whichGPU):
     for feat in train_feats2:
         gpu_index.add(np.expand_dims(feat,0))
 
-    test_datasets = ['./input/test/test_by_chain.txt','./input/occluded_test/by_chain/0.txt','./input/occluded_test/by_chain/1.txt','./input/occluded_test/by_chain/2.txt','./input/occluded_test/by_chain/3.txt']
-    test_names = ['by_chain','by_chain_occluded0','by_chain_occluded1','by_chain_occluded2','by_chain_occluded3']
+    test_datasets = ['./input/test/test_by_chain.txt']
+    test_names = ['by_chain']
     for test_dataset, test_name in zip(test_datasets,test_names):
         test_output_dir = os.path.join(output_dir,test_name)
         test_feats = load_h5('test_feats',os.path.join(test_output_dir,'testFeats.h5'))
