@@ -44,6 +44,7 @@ def main(pretrained_net,whichGPU):
         output_size = 256
     else:
         output_size = 1001
+
     mean_file = './input/meanIm.npy'
 
     train_data = NonTripletSet(train_dataset, mean_file, img_size, crop_size, isTraining=False)
@@ -71,43 +72,45 @@ def main(pretrained_net,whichGPU):
     train_ims = np.array(train_ims)
     train_classes = np.array(train_classes)
 
-    train_feats = np.zeros((train_ims.shape[0],output_size))
-    for ix in range(0,train_ims.shape[0],batch_size):
-        image_list = train_ims[ix:ix+batch_size]
-        batch = train_data.getBatchFromImageList(image_list)
-        ff = sess.run(feat,{image_batch:batch})
-        train_feats[ix:ix+ff.shape[0],:] = ff
-        print 'Train features: ', ix+ff.shape[0], ' out of ' , train_feats.shape[0]
+    if not os.path.exists(os.path.join(test_output_dir,'testIms.h5')):
+        train_feats = np.zeros((train_ims.shape[0],output_size))
+        for ix in range(0,train_ims.shape[0],batch_size):
+            image_list = train_ims[ix:ix+batch_size]
+            batch = train_data.getBatchFromImageList(image_list)
+            ff = sess.run(feat,{image_batch:batch})
+            train_feats[ix:ix+ff.shape[0],:] = ff
+            print 'Train features: ', ix+ff.shape[0], ' out of ' , train_feats.shape[0]
 
-    save_h5('train_ims',train_ims,h5py.special_dtype(vlen=bytes),os.path.join(output_dir,'trainIms.h5'))
-    save_h5('train_classes',train_classes,'i8',os.path.join(output_dir,'trainClasses.h5'))
-    save_h5('train_feats',train_feats,'f',os.path.join(output_dir,'trainFeats.h5'))
+        save_h5('train_ims',train_ims,h5py.special_dtype(vlen=bytes),os.path.join(output_dir,'trainIms.h5'))
+        save_h5('train_classes',train_classes,'i8',os.path.join(output_dir,'trainClasses.h5'))
+        save_h5('train_feats',train_feats,'f',os.path.join(output_dir,'trainFeats.h5'))
 
-    test_datasets = ['./input/test/test_by_hotel.txt','./input/occluded_test/by_hotel/0.txt','./input/occluded_test/by_hotel/1.txt','./input/occluded_test/by_hotel/2.txt','./input/occluded_test/by_hotel/3.txt','./input/test/test_by_chain.txt','./input/occluded_test/by_chain/0.txt','./input/occluded_test/by_chain/1.txt','./input/occluded_test/by_chain/2.txt','./input/occluded_test/by_chain/3.txt']
-    test_names = ['by_hotel','occluded0','occluded1','occluded2','occluded3','by_chain','by_chain_occluded0','by_chain_occluded1','by_chain_occluded2','by_chain_occluded3']
+    test_datasets = ['./input/test_by_hotel.txt','./input/occluded_test/by_hotel/0.txt','./input/occluded_test/by_hotel/1.txt','./input/occluded_test/by_hotel/2.txt','./input/occluded_test/by_hotel/3.txt','./input/test_by_chain.txt']
+    test_names = ['by_hotel','occluded0','occluded1','occluded2','occluded3','by_chain']
     for test_dataset, test_name in zip(test_datasets,test_names):
         test_output_dir = os.path.join(output_dir,test_name)
-        if not os.path.exists(test_output_dir):
-            os.makedirs(test_output_dir)
-        test_data = NonTripletSet(test_dataset, mean_file, img_size, crop_size, isTraining=False)
-        test_ims = []
-        test_classes = []
-        for hotel in test_data.hotels.keys():
-            for im in test_data.hotels[hotel]['ims']:
-                test_ims.append(im)
-                test_classes.append(int(hotel))
-        test_ims = np.array(test_ims)
-        test_classes = np.array(test_classes)
-        test_feats = np.zeros((test_ims.shape[0],output_size))
-        for ix in range(0,test_ims.shape[0],batch_size):
-            image_list = test_ims[ix:ix+batch_size]
-            batch = test_data.getBatchFromImageList(image_list)
-            ff = sess.run(feat,{image_batch:batch})
-            test_feats[ix:ix+ff.shape[0],:] = ff
-            print 'Test features: ',ix+ff.shape[0], ' out of ' , test_feats.shape[0]
-            save_h5('test_ims',test_ims,h5py.special_dtype(vlen=bytes),os.path.join(test_output_dir,'testIms.h5'))
-            save_h5('test_classes',test_classes,'i8',os.path.join(test_output_dir,'testClasses.h5'))
-            save_h5('test_feats',test_feats,'f',os.path.join(test_output_dir,'testFeats.h5'))
+        if not os.path.exists(os.path.join(test_output_dir,'testIms.h5')):
+            if not os.path.exists(test_output_dir):
+                os.makedirs(test_output_dir)
+            test_data = NonTripletSet(test_dataset, mean_file, img_size, crop_size, isTraining=False)
+            test_ims = []
+            test_classes = []
+            for hotel in test_data.hotels.keys():
+                for im in test_data.hotels[hotel]['ims']:
+                    test_ims.append(im)
+                    test_classes.append(int(hotel))
+            test_ims = np.array(test_ims)
+            test_classes = np.array(test_classes)
+            test_feats = np.zeros((test_ims.shape[0],output_size))
+            for ix in range(0,test_ims.shape[0],batch_size):
+                image_list = test_ims[ix:ix+batch_size]
+                batch = test_data.getBatchFromImageList(image_list)
+                ff = sess.run(feat,{image_batch:batch})
+                test_feats[ix:ix+ff.shape[0],:] = ff
+                print 'Test features: ',ix+ff.shape[0], ' out of ' , test_feats.shape[0]
+                save_h5('test_ims',test_ims,h5py.special_dtype(vlen=bytes),os.path.join(test_output_dir,'testIms.h5'))
+                save_h5('test_classes',test_classes,'i8',os.path.join(test_output_dir,'testClasses.h5'))
+                save_h5('test_feats',test_feats,'f',os.path.join(test_output_dir,'testFeats.h5'))
 
 if __name__ == "__main__":
     args = sys.argv
