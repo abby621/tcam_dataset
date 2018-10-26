@@ -72,7 +72,7 @@ def main(pretrained_net,whichGPU):
     train_ims = np.array(train_ims)
     train_classes = np.array(train_classes)
 
-    if not os.path.exists(os.path.join(test_output_dir,'testIms.h5')):
+    if not os.path.exists(os.path.join(output_dir,'trainFeats.h5')):
         train_feats = np.zeros((train_ims.shape[0],output_size))
         for ix in range(0,train_ims.shape[0],batch_size):
             image_list = train_ims[ix:ix+batch_size]
@@ -89,7 +89,7 @@ def main(pretrained_net,whichGPU):
     test_names = ['by_hotel','occluded0','occluded1','occluded2','occluded3','by_chain']
     for test_dataset, test_name in zip(test_datasets,test_names):
         test_output_dir = os.path.join(output_dir,test_name)
-        if not os.path.exists(os.path.join(test_output_dir,'testIms.h5')):
+        if not os.path.exists(os.path.join(test_output_dir,'testFeats.h5')):
             if not os.path.exists(test_output_dir):
                 os.makedirs(test_output_dir)
             test_data = NonTripletSet(test_dataset, mean_file, img_size, crop_size, isTraining=False)
