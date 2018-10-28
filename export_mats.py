@@ -1,4 +1,4 @@
-# python export_mats.py './output/doctoring/ckpts/checkpoint-2018_08_28_2136_tcam_with_doctoring_lr0pt0001_outputSz256_margin0pt3-70841' 0
+# python export_mats.py './output/no_doctoring/ckpts/checkpoint-2018_10_21_1710_lr0pt0001_outputSz256_margin0pt3-84999' 0
 import tensorflow as tf
 from classfile import NonTripletSet
 import os, random, time
@@ -17,12 +17,12 @@ def main(pretrained_net, whichGPU):
     if not 'ilsvrc2012' in pretrained_net:
         iterStr = pretrained_net.split('-')[-1]
         splitStr = pretrained_net.split('/')
-        outMatFolder = os.path.join('/'.join(splitStr[:np.where(np.array(splitStr)=='ckpts')[0][0]]),'results_small/train',iterStr,'mats')
+        outMatFolder = os.path.join('/'.join(splitStr[:np.where(np.array(splitStr)=='ckpts')[0][0]]),'results_small/occluded_test',iterStr,'mats')
     else:
         iterStr = 'ilsvrc2012'
-        outMatFolder = os.path.join('./output/ilsvrc2012/results_small/train/',iterStr,'mats')
+        outMatFolder = os.path.join('./output/ilsvrc2012/results_small/occluded_test/',iterStr,'mats')
 
-    test_file = os.path.join('./input/small_train_by_hotel.txt')
+    test_file = os.path.join('./input/occluded_test_small/small_test_by_hotel.txt')
     mean_file = os.path.join('./input/meanIm.npy')
 
     if not os.path.exists(outMatFolder):
